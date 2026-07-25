@@ -1,0 +1,875 @@
+RAM DIFF REPORT: Dolphin (frame 1800) vs Our Build (at stall)
+
+
+=== LOA table (Dolphin)  base=0x900008B0  slots=32768 ===
+  Live entries: 534
+  slot     7: key=0x87001D88  val=0x908AD540  ref=2
+  slot    22: key=0x7B000556  val=0x80DC0BB0  ref=1
+  slot    24: key=0x87002FDC  val=0x908B4EDC  ref=3
+  slot    47: key=0x8E002C60  val=0x908AB734  ref=1
+  slot    50: key=0x2510075C  val=0x80DC0FD8  ref=1
+  slot    58: key=0x87001A34  val=0x935DCC90  ref=1
+  slot    61: key=0x8E002B38  val=0x908B25D8  ref=1
+  slot    97: key=0x87002F17  val=0x935DA9C0  ref=1
+  slot   146: key=0x25100A0D  val=0x909D50E4  ref=1
+  slot   148: key=0x0800C2E8  val=0x817FCA30  ref=1
+  slot   186: key=0x890037F7  val=0x935DE0E0  ref=1
+  slot   241: key=0x85004BCC  val=0x908B36F8  ref=1
+  slot   362: key=0x251015EC  val=0x80DE04A4  ref=1
+  slot   384: key=0x0E0076CA  val=0x909D0E14  ref=1
+  slot   398: key=0x0E000119  val=0x817FC7E8  ref=1
+  slot   500: key=0x0E0076BA  val=0x9070A030  ref=1
+  slot   529: key=0x0E0076C7  val=0x817F94D0  ref=1
+  slot   558: key=0x87001D9E  val=0x9070AF74  ref=1
+  slot   670: key=0x8E002B36  val=0x908B2098  ref=1
+  slot  1010: key=0x87003012  val=0x935DCE60  ref=1
+  slot  1041: key=0x87003013  val=0x935DCE70  ref=1
+  slot  1065: key=0x870033C5  val=0x90902300  ref=1
+  slot  1132: key=0x87002F12  val=0x935DC970  ref=1
+  slot  1156: key=0x25100772  val=0x9070E604  ref=1
+  slot  1224: key=0x2510077C  val=0x9070E6B4  ref=1
+  slot  1228: key=0x251010CD  val=0x80DED740  ref=1
+  slot  1350: key=0x59002A92  val=0x935DA980  ref=1
+  slot  1402: key=0x87001A48  val=0x80DBEB5C  ref=1
+  slot  1405: key=0x850055BD  val=0x935DC8F0  ref=2
+  slot  1515: key=0x2310018E  val=0x90CAFD9C  ref=1
+  slot  1627: key=0x7B00B50F  val=0x90857BB0  ref=1
+  slot  1633: key=0xCB100293  val=0x90709FB8  ref=1
+  slot  1641: key=0x85001CED  val=0x9070AAEC  ref=1
+  slot  1741: key=0x6100CD64  val=0x903B8938  ref=1
+  slot  1777: key=0x87002FDB  val=0x935DC760  ref=1
+  slot  1847: key=0x0E0076BC  val=0x9070A2EC  ref=1
+  slot  1897: key=0x360002EC  val=0x907099A4  ref=1
+  slot  2042: key=0x2510124D  val=0x909D534C  ref=1
+  slot  2076: key=0x87001A35  val=0x935DCE30  ref=2
+  slot  2157: key=0x85003DFD  val=0x908AA8EC  ref=1
+  slot  2197: key=0x7B00039B  val=0x80DED378  ref=1
+  slot  2272: key=0x60001C7A  val=0x909D51EC  ref=1
+  slot  2317: key=0xDB00C028  val=0x908EB214  ref=1
+  slot  2321: key=0x85004382  val=0x908AF800  ref=1
+  slot  2474: key=0xA6000D2C  val=0x80DE1D34  ref=1
+  slot  2498: key=0x25100F87  val=0x90CAFB8C  ref=1
+  slot  2508: key=0x72003387  val=0x907097DC  ref=1
+  slot  2531: key=0x870000E8  val=0x903C56FC  ref=1
+  slot  2532: key=0x25100779  val=0x9070EAE8  ref=1
+  slot  2714: key=0x0E002A31  val=0x817FC5A0  ref=1
+  slot  2725: key=0x25101243  val=0x909D529C  ref=1
+  slot  2756: key=0x25100A24  val=0x909D5034  ref=1
+  slot  2773: key=0x6000218A  val=0x90826C64  ref=1
+  slot  2827: key=0x8E002B37  val=0x908B2338  ref=1
+  slot  3001: key=0x25100A1F  val=0x90CAFDF4  ref=1
+  slot  3007: key=0x85000EE8  val=0x935DCEB0  ref=1
+  slot  3084: key=0x8E002C38  val=0x908AA66C  ref=1
+  slot  3157: key=0xB41016A8  val=0x90B410F8  ref=1
+  slot  3291: key=0x251010C1  val=0x80DED644  ref=1
+  slot  3298: key=0xA6000D2E  val=0x80DE1D88  ref=1
+  slot  3349: key=0x61001FE2  val=0x935DCEC0  ref=1
+  slot  3382: key=0x2510074A  val=0x80DE00B4  ref=1
+  slot  3441: key=0x5000956B  val=0x80DBEFA0  ref=1
+  slot  3498: key=0x360002E9  val=0x907098C0  ref=1
+  slot  3617: key=0xB41016A6  val=0x904A9A04  ref=1
+  slot  3638: key=0x87001D87  val=0x9070EF44  ref=1
+  slot  3676: key=0x8700301B  val=0x908EAD30  ref=1
+  slot  3737: key=0x60001C78  val=0x90CAFB34  ref=1
+  slot  3838: key=0x87002F18  val=0x935DC950  ref=1
+  slot  3928: key=0x7B00026E  val=0x817FD0D0  ref=1 <-- TARGET
+  slot  3984: key=0x9D001871  val=0x817FBFC8  ref=1
+  slot  4001: key=0x60002187  val=0x90857058  ref=1
+  slot  4108: key=0x0E0028DE  val=0x900A5A2C  ref=1
+  slot  4258: key=0x72003386  val=0x90709790  ref=1
+  slot  4382: key=0xDB00C5BD  val=0x908EB2C4  ref=1
+  slot  4405: key=0x0E006B13  val=0x817F8F60  ref=1
+  slot  4446: key=0x890022CF  val=0x935DCE90  ref=1
+  slot  4532: key=0x0E0076EE  val=0x90709304  ref=1
+  slot  4581: key=0x7B0006FE  val=0x80DEAD9C  ref=1
+  slot  4668: key=0x87001A43  val=0x908B31F8  ref=1
+  slot  4721: key=0xA6000D5D  val=0x80DE1DDC  ref=1
+  slot  4787: key=0x87001DA3  val=0x908F0BAC  ref=2
+  slot  4899: key=0x87003292  val=0x935DC790  ref=1
+  slot  5005: key=0x85002A0E  val=0x935DC7B0  ref=1
+  slot  5026: key=0x890037FE  val=0x9070FC90  ref=1
+  slot  5050: key=0xB4101228  val=0x80DEDA20  ref=1
+  slot  5078: key=0x72003384  val=0x90709588  ref=1
+  slot  5095: key=0x25100A3C  val=0x80DED4F4  ref=1
+  slot  5181: key=0x25101EE3  val=0x909D4FDC  ref=1
+  slot  5213: key=0xA500014A  val=0x817F79D0  ref=1
+  slot  5222: key=0x25100A35  val=0x80DEB1E4  ref=1
+  slot  5236: key=0x25100A3F  val=0x80DBEBF8  ref=1
+  slot  5263: key=0xE111B8BD  val=0x908ACE00  ref=1
+  slot  5320: key=0x89003490  val=0x935DCFE0  ref=1
+  slot  5340: key=0x7B0003B1  val=0x80DE3ACC  ref=1
+  slot  5374: key=0x87001DA2  val=0x908F44F4  ref=1
+  slot  5423: key=0x61004013  val=0x90318D14  ref=1
+  slot  5585: key=0xDB00D0F8  val=0x9070EBF0  ref=2
+  slot  5588: key=0xCD0000EA  val=0x908F950C  ref=1
+  slot  5728: key=0x69003442  val=0x90909BB4  ref=2
+  slot  5729: key=0xB41016AA  val=0x90B52A24  ref=1
+  slot  5888: key=0x850040DC  val=0x90906624  ref=1
+  slot  5980: key=0x2510073E  val=0x80DCC9F4  ref=1
+  slot  6029: key=0x7B00B515  val=0x80DEA228  ref=1
+  slot  6066: key=0x850040DD  val=0x90906674  ref=1
+  slot  6072: key=0x50009565  val=0x80DBEDCC  ref=1
+  slot  6099: key=0x0E007C10  val=0x909D0DA8  ref=1
+  slot  6114: key=0x0E000571  val=0x817FC7A0  ref=1
+  slot  6175: key=0xB4100DCD  val=0x80DBE8EC  ref=1
+  slot  6231: key=0x85004A14  val=0x908B1378  ref=1
+  slot  6295: key=0xE111B8B9  val=0x908ACD50  ref=1
+  slot  6308: key=0x87002E05  val=0x935DCCB0  ref=1
+  slot  6438: key=0x87002F49  val=0x908B8A98  ref=1
+  slot  6565: key=0xCD0000E1  val=0x908B5D64  ref=2
+  slot  6594: key=0xCB100295  val=0x9070A294  ref=1
+  slot  6621: key=0x850040DA  val=0x908B4BD4  ref=1
+  slot  6626: key=0x7B000555  val=0x80DDD010  ref=1
+  slot  6669: key=0xB4101224  val=0x80DEBE44  ref=1
+  slot  6722: key=0x87002F48  val=0x908ABC54  ref=1
+  slot  6811: key=0x85001887  val=0x90709C44  ref=1
+  slot  6821: key=0xDB00D1A8  val=0x908EB164  ref=1
+  slot  6834: key=0x87003252  val=0x935DD030  ref=1
+  slot  6872: key=0x370017F0  val=0x90709AD4  ref=1
+  slot  6932: key=0x69004694  val=0x908AD0EC  ref=1
+  slot  6939: key=0x85003D30  val=0x935DCFF0  ref=1
+  slot  6958: key=0x5000E91D  val=0x908AD03C  ref=1
+  slot  6993: key=0x720000BE  val=0x817FD3E8  ref=1 <-- TARGET
+  slot  7080: key=0x6100400A  val=0x935DD050  ref=3
+  slot  7115: key=0x8E002B35  val=0x908B1B58  ref=2
+  slot  7141: key=0x7A004B97  val=0x9070E70C  ref=1
+  slot  7426: key=0x72000071  val=0x817FD578  ref=1 <-- TARGET
+  slot  7452: key=0x7200377E  val=0x817F7CD0  ref=1
+  slot  7469: key=0x7B000398  val=0x80DED324  ref=1
+  slot  7486: key=0x85001CEF  val=0x9070EE40  ref=1
+  slot  7548: key=0x25100B7C  val=0x909D53A4  ref=1
+  slot  7577: key=0x60002189  val=0x90828D5C  ref=1
+  slot  7607: key=0x251013E3  val=0x90CAF968  ref=1
+  slot  7644: key=0x850055C5  val=0x908B0E38  ref=1
+  slot  7675: key=0xA6001188  val=0x80DE15A8  ref=1
+  slot  7734: key=0x25100A0B  val=0x90CAFA2C  ref=1
+  slot  7753: key=0x87003011  val=0x935DCE50  ref=1
+  slot  7773: key=0x870031EC  val=0x9070EF94  ref=1
+  slot  7782: key=0xCD0000EE  val=0x90904860  ref=2
+  slot  7786: key=0x5000956C  val=0x80DBF03C  ref=1
+  slot  7819: key=0x7B0003CE  val=0x80DED3CC  ref=1
+  slot  7872: key=0x87003293  val=0x908B46D4  ref=1
+  slot  7913: key=0xCD0000ED  val=0x9070EEF4  ref=41
+  slot  7998: key=0x87003017  val=0x908B8750  ref=1
+  slot  8093: key=0x25100A12  val=0x909D5194  ref=1
+  slot  8281: key=0x890028ED  val=0x908AD2C0  ref=1
+  slot  8301: key=0x25101159  val=0x935DF944  ref=1
+  slot  8302: key=0x85004A11  val=0x935DC990  ref=1
+  slot  8337: key=0x85003D66  val=0x908B894C  ref=1
+  slot  8423: key=0x25100777  val=0x9070E65C  ref=1
+  slot  8456: key=0x87001A41  val=0x908AD8F8  ref=1
+  slot  8516: key=0xA5000AAA  val=0x817F8BD0  ref=1
+  slot  8593: key=0x7B000550  val=0x80DC197C  ref=1
+  slot  8600: key=0x25101210  val=0x817F8F48  ref=1
+  slot  8663: key=0xB410113A  val=0x80DE03A8  ref=1
+  slot  8677: key=0xE111B8C8  val=0x908ACFE4  ref=1
+  slot  8765: key=0xA6000D38  val=0x80DBE850  ref=1
+  slot  8766: key=0x251041FA  val=0x909D53FC  ref=1
+  slot  8795: key=0x35066DD3  val=0x9070EC88  ref=1
+  slot  8957: key=0xA6000D39  val=0x80DC174C  ref=1
+  slot  8958: key=0x87001DA0  val=0x908AEEE8  ref=20
+  slot  8990: key=0x8E002B39  val=0x908ADB78  ref=1
+  slot  8996: key=0x850055C3  val=0x935DCBE0  ref=1
+  slot  9013: key=0x25100748  val=0x80DE0060  ref=1
+  slot  9140: key=0x7B0003C8  val=0x908760E8  ref=1
+  slot  9166: key=0x8E0022B5  val=0x908B2F38  ref=1
+  slot  9260: key=0x9D0004D7  val=0x90709D14  ref=1
+  slot  9339: key=0x8E002A72  val=0x935DD010  ref=1
+  slot  9468: key=0x25101EE5  val=0x909D5504  ref=1
+  slot  9469: key=0xE111B8CC  val=0x908AD094  ref=1
+  slot  9483: key=0x85004BCB  val=0x908B4180  ref=1
+  slot  9506: key=0x69004698  val=0x908AD118  ref=1
+  slot  9552: key=0x2510075A  val=0x80DE0258  ref=1
+  slot  9568: key=0x25100A49  val=0x908A479C  ref=1
+  slot  9654: key=0x0E0001BF  val=0x90709828  ref=1
+  slot  9766: key=0xA6001180  val=0x817F8EA0  ref=1
+  slot  9791: key=0x25100DE1  val=0x900A5860  ref=1
+  slot  9862: key=0xA6002F53  val=0x80DE15FC  ref=1
+  slot  9907: key=0x7B000396  val=0x80DED2D0  ref=1
+  slot  9908: key=0xA6001185  val=0x80DC1158  ref=1
+  slot  9964: key=0xDB00BFAE  val=0x908AD19C  ref=1
+  slot  9980: key=0x850055BC  val=0x935DC7C0  ref=2
+  slot 10109: key=0x85004BC9  val=0x908B39AC  ref=1
+  slot 10155: key=0x7B00B50D  val=0x90D41CA4  ref=1
+  slot 10252: key=0x89003717  val=0x908EB028  ref=1
+  slot 10266: key=0x8E002C37  val=0x908AA3EC  ref=1
+  slot 10277: key=0x0E007440  val=0x80DE03FC  ref=1
+  slot 10278: key=0x7B000701  val=0x80DE3C4C  ref=1
+  slot 10411: key=0x720028C2  val=0x80DE20E8  ref=1
+  slot 10564: key=0x87001DA1  val=0x908F4490  ref=1
+  slot 10677: key=0x890022D0  val=0x935DCE80  ref=1
+  slot 10713: key=0x85005471  val=0x935DCC10  ref=1
+  slot 10808: key=0x720028B4  val=0x80DD15A0  ref=1
+  slot 10811: key=0xA6001183  val=0x80DE1554  ref=1
+  slot 10926: key=0xB4101226  val=0x80DED9CC  ref=1
+  slot 11019: key=0x0E007372  val=0x80DED59C  ref=1
+  slot 11118: key=0x85001D29  val=0x935DE0F0  ref=1
+  slot 11121: key=0x60002185  val=0x908A7E0C  ref=1
+  slot 11195: key=0x5000EF18  val=0x90B6352C  ref=1
+  slot 11245: key=0xE111B8C9  val=0x908AD010  ref=1
+  slot 11265: key=0x890028F5  val=0x908AB0D8  ref=1
+  slot 11273: key=0x8700311D  val=0x935DD080  ref=1
+  slot 11368: key=0x7A002848  val=0x90709B20  ref=1
+  slot 11375: key=0x87001A42  val=0x908AFD40  ref=1
+  slot 11387: key=0xCD0000EF  val=0x908B592C  ref=1
+  slot 11393: key=0x251010B2  val=0x909D513C  ref=1
+  slot 11425: key=0x25101246  val=0x90CAFC3C  ref=1
+  slot 11443: key=0x8E0022D5  val=0x908F95F8  ref=1
+  slot 11561: key=0x7B00B507  val=0x80DED548  ref=1
+  slot 11589: key=0x850055C2  val=0x935DCBF0  ref=1
+  slot 11747: key=0xDB00C5C1  val=0x908AD1F4  ref=1
+  slot 11808: key=0xE111B8C4  val=0x908ACF34  ref=1
+  slot 11896: key=0xCD0000E5  val=0x908EB3E8  ref=2
+  slot 11900: key=0xE111B8C3  val=0x908ACF08  ref=1
+  slot 11903: key=0x85004137  val=0x908AFFE0  ref=1
+  slot 11908: key=0x9D00186F  val=0x80DBE43C  ref=1
+  slot 11952: key=0xDB00BFA7  val=0x9090BFF0  ref=2
+  slot 11956: key=0x87002F02  val=0x935DA9B0  ref=1
+  slot 12115: key=0x0E007762  val=0x80DED7E8  ref=1
+  slot 12169: key=0x8700310B  val=0x908B56AC  ref=2
+  slot 12215: key=0x8900281D  val=0x935DD070  ref=1
+  slot 12273: key=0xA600113C  val=0x80DCF36C  ref=1
+  slot 12369: key=0xA50002E2  val=0x817F8960  ref=1
+  slot 12416: key=0x8E000606  val=0x935DD040  ref=1
+  slot 12451: key=0xDB00E3F9  val=0x908B5990  ref=2
+  slot 12509: key=0x25100A37  val=0x80DED4A0  ref=1
+  slot 12540: key=0x25100F89  val=0x909D5244  ref=1
+  slot 12705: key=0x85005474  val=0x908B0520  ref=1
+  slot 12748: key=0x890037F9  val=0x935DD0B0  ref=1
+  slot 12768: key=0x25100A2F  val=0x90318944  ref=1
+  slot 12775: key=0x87003108  val=0x908EB630  ref=1
+  slot 12829: key=0x7200346B  val=0x817F80B8  ref=1
+  slot 12854: key=0xA6000D28  val=0x817F8D30  ref=1
+  slot 12863: key=0x8E002C5F  val=0x908AB358  ref=1
+  slot 12880: key=0x870031E9  val=0x9070FF10  ref=1
+  slot 12955: key=0x59002A94  val=0x907092D4  ref=1
+  slot 12974: key=0x60002184  val=0x908558E0  ref=1
+  slot 12980: key=0x870034D3  val=0x908EAFB0  ref=1
+  slot 13006: key=0x7B0006FB  val=0x80DBE988  ref=1
+  slot 13038: key=0x870016D5  val=0x9070B1A4  ref=1
+  slot 13242: key=0xE111B8BA  val=0x908ACD7C  ref=1
+  slot 13260: key=0x87001A49  val=0x907091D8  ref=1
+  slot 13261: key=0xB4100FE1  val=0x80DE02AC  ref=1
+  slot 13427: key=0x72002991  val=0x817FD148  ref=1 <-- TARGET
+  slot 13497: key=0x7B00B510  val=0x90D38378  ref=1
+  slot 13610: key=0x251010AD  val=0x909D508C  ref=1
+  slot 13665: key=0x8E002C61  val=0x908B8888  ref=1
+  slot 13759: key=0x360000FE  val=0x817FD0A0  ref=1
+  slot 13841: key=0x251010CB  val=0x80DED6EC  ref=1
+  slot 13887: key=0x610059B6  val=0x90A94F18  ref=1
+  slot 14037: key=0x85001885  val=0x9070AA74  ref=1
+  slot 14066: key=0x6000218C  val=0x90826160  ref=1
+  slot 14075: key=0x8500390C  val=0x935DE100  ref=1
+  slot 14078: key=0x2510077E  val=0x9070EB40  ref=1
+  slot 14095: key=0x87003014  val=0x908AB9D4  ref=1
+  slot 14140: key=0x25100A10  val=0x90CAFADC  ref=1
+  slot 14228: key=0xCD0000E2  val=0x90907728  ref=1
+  slot 14260: key=0xE111CA80  val=0x90B63500  ref=1
+  slot 14315: key=0x25100A4A  val=0x90318CE0  ref=1
+  slot 14516: key=0x890036EE  val=0x908ACA24  ref=1
+  slot 14525: key=0xCD0000E8  val=0x908B515C  ref=3
+  slot 14736: key=0x25100A33  val=0x907D04D8  ref=1
+  slot 14744: key=0x87001D7F  val=0x935DC750  ref=1
+  slot 14758: key=0xE111B8BB  val=0x908ACDA8  ref=1
+  slot 14845: key=0xB4100DBD  val=0x80DE34C0  ref=1
+  slot 14881: key=0x850040DB  val=0x908B4E94  ref=1
+  slot 15038: key=0x87000438  val=0x935DCCA0  ref=1
+  slot 15039: key=0xB41016AC  val=0x90B2CFF8  ref=1
+  slot 15140: key=0xE111B8BE  val=0x908ACE2C  ref=1
+  slot 15159: key=0xA600136E  val=0x817F8BA0  ref=1
+  slot 15167: key=0x7B00B516  val=0x80DBEC94  ref=1
+  slot 15177: key=0x7A000B49  val=0x817FC5D0  ref=1
+  slot 15243: key=0x37000929  val=0x817FC678  ref=1
+  slot 15335: key=0x7B000700  val=0x80DED44C  ref=1
+  slot 15383: key=0xB4100DCF  val=0x909109DC  ref=1
+  slot 15444: key=0x8700310C  val=0x908B51AC  ref=6
+  slot 15471: key=0xCD0000EC  val=0x9070EEA4  ref=6
+  slot 15472: key=0xDB00D659  val=0x904CEC58  ref=1
+  slot 15538: key=0x87002DEF  val=0x9070B12C  ref=1
+  slot 15539: key=0xE111B8B8  val=0x908ACD24  ref=1
+  slot 15567: key=0x85003D1D  val=0x935DD000  ref=11
+  slot 15579: key=0xE111B8C7  val=0x908ACFB8  ref=1
+  slot 15728: key=0x8500562C  val=0x908B3C4C  ref=1
+  slot 15747: key=0x25100750  val=0x80DE015C  ref=1
+  slot 15804: key=0x251041F8  val=0x90CAFD44  ref=1
+  slot 15832: key=0x87001A2C  val=0x935DC960  ref=2
+  slot 15840: key=0xE111B8C2  val=0x908ACEDC  ref=1
+  slot 16048: key=0xE111B8C5  val=0x908ACF60  ref=1
+  slot 16131: key=0x85005473  val=0x908B0280  ref=1
+  slot 16152: key=0x6000218B  val=0x908A738C  ref=1
+  slot 16185: key=0x85004388  val=0x908AF560  ref=1
+  slot 16331: key=0x85002A0F  val=0x908B4400  ref=1
+  slot 16354: key=0x87002E0B  val=0x90709CAC  ref=1
+  slot 16399: key=0xDB00C5C2  val=0x9090E42C  ref=2
+  slot 16471: key=0x85004BCA  val=0x908B3F00  ref=1
+  slot 16513: key=0x60002186  val=0x908282D8  ref=1
+  slot 16620: key=0x7B00056F  val=0x817FA178  ref=1
+  slot 16691: key=0x7B0006FA  val=0x80DE3A28  ref=1
+  slot 16722: key=0xDB00D657  val=0x904EB8A4  ref=1
+  slot 16803: key=0x89003801  val=0x9070F790  ref=1
+  slot 16837: key=0x360004E9  val=0x817F8978  ref=1
+  slot 16863: key=0x251010BF  val=0x80DED5F0  ref=1
+  slot 16918: key=0x87001A3F  val=0x908AD678  ref=1
+  slot 16964: key=0x85005482  val=0x935DC920  ref=6
+  slot 16989: key=0xE111B8C6  val=0x908ACF8C  ref=1
+  slot 17096: key=0x85005481  val=0x935DCC30  ref=1
+  slot 17406: key=0xA600300A  val=0x817FA3B8  ref=1
+  slot 17487: key=0x7A000B46  val=0x907099F0  ref=1
+  slot 17518: key=0x251011E8  val=0x9070E5AC  ref=1
+  slot 17570: key=0x25100DD4  val=0x935DF9BC  ref=1
+  slot 17705: key=0x87002F16  val=0x935DCC50  ref=1
+  slot 17875: key=0x87002CAD  val=0x908EB6F4  ref=2
+  slot 17903: key=0x0E0076C2  val=0x907093AC  ref=1
+  slot 17942: key=0x7B00B50E  val=0x90D37364  ref=1
+  slot 17964: key=0x6100400D  val=0x908AA2A8  ref=1
+  slot 18035: key=0xDB00D1AA  val=0x908EB1BC  ref=1
+  slot 18195: key=0x0E0079BE  val=0x80DED83C  ref=1
+  slot 18221: key=0xA60013F3  val=0x90907778  ref=1
+  slot 18323: key=0x72003385  val=0x90709744  ref=1
+  slot 18339: key=0x87001A47  val=0x908A44E8  ref=1
+  slot 18390: key=0x87002D5F  val=0x935DCDF0  ref=1
+  slot 18559: key=0x87003018  val=0x908AC6F0  ref=1
+  slot 18604: key=0x25100920  val=0x935DC5BC  ref=1
+  slot 18670: key=0xB4100DBF  val=0x817F8918  ref=1
+  slot 18846: key=0x7B00B511  val=0x90D443A0  ref=1
+  slot 19047: key=0x7B00B512  val=0x90D39574  ref=1
+  slot 19066: key=0x0800952D  val=0x817FAC60  ref=1
+  slot 19212: key=0xEF001B65  val=0x90709B6C  ref=1
+  slot 19276: key=0x5000F10C  val=0x90B63558  ref=1
+  slot 19375: key=0x87002C93  val=0x908AE3D0  ref=1
+  slot 19377: key=0x87001D85  val=0x908A4A44  ref=1
+  slot 19414: key=0x7B000553  val=0x80DDCFBC  ref=1
+  slot 19433: key=0x87003174  val=0x9070FA10  ref=1
+  slot 19440: key=0x85004BC8  val=0x908B3478  ref=1
+  slot 19475: key=0xA600118E  val=0x817F8EE8  ref=1
+  slot 19679: key=0xDB00D0F6  val=0x9070E97C  ref=2
+  slot 19790: key=0x720028C9  val=0x80DBE5E0  ref=2
+  slot 19812: key=0x850055BE  val=0x935DC8E0  ref=2
+  slot 20118: key=0x87001A45  val=0x908AF020  ref=1
+  slot 20239: key=0x25100A40  val=0x80DE3DCC  ref=1
+  slot 20318: key=0x5000956A  val=0x80DBEF04  ref=1
+  slot 20420: key=0x7B00B532  val=0x80DE0450  ref=1
+  slot 20429: key=0x59002E81  val=0x935DC6F0  ref=1
+  slot 20529: key=0x251006FC  val=0x935DC51C  ref=1
+  slot 20570: key=0x8E0022D3  val=0x908B4954  ref=1
+  slot 20610: key=0x6000218D  val=0x9082771C  ref=1
+  slot 20623: key=0x61004008  val=0x935DE130  ref=5
+  slot 20679: key=0x87003019  val=0x908AC470  ref=1
+  slot 20769: key=0xDB00D279  val=0x904BE668  ref=1
+  slot 20779: key=0xEF001754  val=0x900A59D4  ref=1
+  slot 20991: key=0x0E0034CD  val=0x90709C78  ref=1
+  slot 20996: key=0x87001A36  val=0x935DC910  ref=1
+  slot 21093: key=0x87001D9F  val=0x90709EA8  ref=1
+  slot 21146: key=0x8E0010B5  val=0x935DCE40  ref=2
+  slot 21166: key=0x7B00039D  val=0x817F8148  ref=1
+  slot 21326: key=0xA6001184  val=0x80DBE7B4  ref=1
+  slot 21403: key=0x87002E8E  val=0x935DC780  ref=1
+  slot 21570: key=0x890037F8  val=0x935DD090  ref=1
+  slot 21617: key=0x850040D7  val=0x935DC770  ref=1
+  slot 21636: key=0x61003EBA  val=0x90710410  ref=1
+  slot 21706: key=0x87001A55  val=0x909058AC  ref=1
+  slot 21935: key=0x87003106  val=0x935DC730  ref=1
+  slot 22237: key=0x0E008905  val=0x9070916C  ref=1
+  slot 22239: key=0x25101248  val=0x909D52F4  ref=1
+  slot 22283: key=0xB4100DBA  val=0x80DE2CC8  ref=1
+  slot 22284: key=0x25100774  val=0x9070EA90  ref=1
+  slot 22304: key=0x85003E00  val=0x908AAE58  ref=1
+  slot 22377: key=0x72000063  val=0x80DECE24  ref=1
+  slot 22481: key=0x25100754  val=0x80DE01B0  ref=1
+  slot 22489: key=0x360004E7  val=0x80DE29E0  ref=1
+  slot 22493: key=0x87002C8F  val=0x908ADDF8  ref=1
+  slot 22506: key=0x85000E18  val=0x903B789C  ref=1
+  slot 22521: key=0x69004E30  val=0x908AD170  ref=1
+  slot 22625: key=0x720028B6  val=0x817F8CA0  ref=1
+  slot 22724: key=0x87003010  val=0x935DC720  ref=1
+  slot 22725: key=0x87001A38  val=0x935DCE20  ref=1
+  slot 22728: key=0x85004381  val=0x908AF2C0  ref=1
+  slot 22752: key=0x25100A39  val=0x817F8130  ref=1
+  slot 22763: key=0x0E0001C0  val=0x90709874  ref=1
+  slot 22800: key=0xA6002F12  val=0x817F8D60  ref=1
+  slot 22822: key=0x87002CAA  val=0x908AE670  ref=1
+  slot 22846: key=0x85001886  val=0x9070EDA0  ref=1
+  slot 23013: key=0x87002F14  val=0x935DC9C0  ref=1
+  slot 23042: key=0x251011EA  val=0x9070EA38  ref=1
+  slot 23071: key=0x251010B0  val=0x90CAFA84  ref=1
+  slot 23075: key=0xBD0044F6  val=0x817FC7B8  ref=1
+  slot 23104: key=0xDB00C02A  val=0x908EB26C  ref=1
+  slot 23199: key=0x251010AB  val=0x90CAF9D4  ref=1
+  slot 23235: key=0x690046FF  val=0x908AD144  ref=1
+  slot 23295: key=0xE111B8CB  val=0x908AD068  ref=1
+  slot 23486: key=0x87002F13  val=0x935DC930  ref=1
+  slot 23517: key=0x7B00024C  val=0x817FD0E8  ref=1 <-- TARGET
+  slot 23537: key=0x87001D7E  val=0x935DCCC0  ref=1
+  slot 23541: key=0x7B0006FC  val=0x80DBEAC0  ref=1
+  slot 23577: key=0x251010CF  val=0x80DED794  ref=1
+  slot 23587: key=0x85004BDF  val=0x908B0A60  ref=8
+  slot 23663: key=0x37004728  val=0x908AE0E4  ref=1
+  slot 23704: key=0xB41010FF  val=0x80DE0354  ref=1
+  slot 23765: key=0x87002F11  val=0x935DC940  ref=1
+  slot 23804: key=0x6100CD5F  val=0x935DA970  ref=1
+  slot 23833: key=0x25101241  val=0x90CAFBE4  ref=1
+  slot 24013: key=0x7B000394  val=0x80DEA574  ref=1
+  slot 24036: key=0x85000E00  val=0x9070ED3C  ref=1
+  slot 24234: key=0x87001D86  val=0x9070AD0C  ref=1
+  slot 24257: key=0x360002EB  val=0x90709958  ref=1
+  slot 24385: key=0x370017EB  val=0x90709A88  ref=1
+  slot 24507: key=0x720028BD  val=0x817F8C78  ref=1
+  slot 24546: key=0x870034D2  val=0x908AC970  ref=1
+  slot 24585: key=0x7A006FDA  val=0x817F9578  ref=1
+  slot 24604: key=0x720000D7  val=0x817FD160  ref=1 <-- TARGET
+  slot 24751: key=0xA60013F1  val=0x908EB0EC  ref=1
+  slot 24806: key=0x25100746  val=0x80DE000C  ref=1
+  slot 24999: key=0x61004009  val=0x935DE120  ref=5
+  slot 25016: key=0x870032DA  val=0x90710190  ref=1
+  slot 25060: key=0x850055BF  val=0x935DC900  ref=2
+  slot 25112: key=0x251010C9  val=0x80DED698  ref=1
+  slot 25149: key=0x50009566  val=0x90859F90  ref=1
+  slot 25154: key=0x87003036  val=0x908ABF70  ref=1
+  slot 25240: key=0x9D0027BF  val=0x817F9730  ref=1
+  slot 25273: key=0x85005483  val=0x908B2878  ref=1
+  slot 25314: key=0x85001CEE  val=0x9070EDF0  ref=1
+  slot 25429: key=0x8700311C  val=0x935DE110  ref=2
+  slot 25444: key=0x87003015  val=0x935DD020  ref=1
+  slot 25611: key=0x87001A44  val=0x908B1DF8  ref=1
+  slot 25613: key=0x85003DFE  val=0x908AABB8  ref=1
+  slot 25664: key=0x25100758  val=0x80DE0204  ref=1
+  slot 25748: key=0x8E0022DB  val=0x908F961C  ref=1
+  slot 25755: key=0x50009568  val=0x80DBED30  ref=1
+  slot 25758: key=0x2510075B  val=0x80DBE67C  ref=1
+  slot 25856: key=0x25100744  val=0x80DDFFB8  ref=1
+  slot 26030: key=0x850055C1  val=0x908B07C0  ref=1
+  slot 26334: key=0xDB00C5BF  val=0x908EB31C  ref=1
+  slot 26365: key=0xE111B8BC  val=0x908ACDD4  ref=1
+  slot 26391: key=0x25100742  val=0x80DDFF64  ref=1
+  slot 26411: key=0x610022EB  val=0x90709EDC  ref=1
+  slot 26533: key=0x87001A32  val=0x935DCC40  ref=1
+  slot 26577: key=0x25100A26  val=0x909D555C  ref=1
+  slot 26747: key=0x25101236  val=0x9070E924  ref=1
+  slot 26805: key=0x360002EA  val=0x9070990C  ref=1
+  slot 26854: key=0xB4100DCE  val=0x80DE2B48  ref=1
+  slot 26934: key=0x61002221  val=0x935DD0A0  ref=1
+  slot 27033: key=0xB4100DC7  val=0x90910868  ref=1
+  slot 27151: key=0x85004380  val=0x935DCC70  ref=1
+  slot 27171: key=0x87000439  val=0x908AEC48  ref=1
+  slot 27209: key=0x25100740  val=0x817F94B8  ref=1
+  slot 27226: key=0x7B0003B0  val=0x80DBEA24  ref=1
+  slot 27244: key=0x0E007BEB  val=0x935DE8A8  ref=1
+  slot 27298: key=0x50009567  val=0x80DEEECC  ref=2
+  slot 27346: key=0x60002188  val=0x9085641C  ref=1
+  slot 27410: key=0x59002E83  val=0x909D499C  ref=1
+  slot 27530: key=0x890037F6  val=0x935DD0C0  ref=2
+  slot 27541: key=0xB4100DC4  val=0x80DE3514  ref=1
+  slot 27542: key=0x87001D96  val=0x908EDE9C  ref=21
+  slot 27574: key=0x50009569  val=0x80DBEE68  ref=1
+  slot 27588: key=0x25100A2E  val=0x935DB4A8  ref=1
+  slot 27589: key=0x720028C0  val=0x80DE2094  ref=1
+  slot 27614: key=0x25101238  val=0x9070EB98  ref=1
+  slot 27620: key=0x87001A52  val=0x935DCE10  ref=1
+  slot 27707: key=0x2510074C  val=0x80DE0108  ref=1
+  slot 27813: key=0x85000E01  val=0x9070A344  ref=1
+  slot 27946: key=0x9D00186E  val=0x80DC0768  ref=1
+  slot 28014: key=0x8E0022D4  val=0x935DCC00  ref=2
+  slot 28019: key=0xDB00BFBF  val=0x908AD1C8  ref=1
+  slot 28042: key=0x87001A46  val=0x908B10D8  ref=1
+  slot 28177: key=0x89003802  val=0x935DE5B0  ref=3
+  slot 28304: key=0x25100B7A  val=0x90CAFCEC  ref=1
+  slot 28435: key=0x251014BC  val=0x908AC9AC  ref=1
+  slot 28579: key=0x5000956D  val=0x90CB731C  ref=1
+  slot 28598: key=0x87002D5E  val=0x935DCDE0  ref=1
+  slot 28804: key=0x8E00125F  val=0x935DD060  ref=1
+  slot 28873: key=0xE111B8CD  val=0x908AD0C0  ref=1
+  slot 28891: key=0x85004A13  val=0x935DC9B0  ref=1
+  slot 28925: key=0x87001D84  val=0x908B542C  ref=2
+  slot 28995: key=0x8500437F  val=0x935DCC60  ref=1
+  slot 29085: key=0x0E0028E5  val=0x9070ECEC  ref=3
+  slot 29139: key=0x85004A12  val=0x935DC980  ref=1
+  slot 29183: key=0x25101535  val=0x90709CE0  ref=1
+  slot 29205: key=0x251006FD  val=0x9070A088  ref=3
+  slot 29309: key=0x8E002B34  val=0x908AFAA0  ref=1
+  slot 29447: key=0x370017EA  val=0x90709A3C  ref=1
+  slot 29569: key=0xA6000D1B  val=0x80DD0B4C  ref=1
+  slot 29635: key=0x85004A15  val=0x908B1618  ref=1
+  slot 29666: key=0x85005489  val=0x908B2BAC  ref=1
+  slot 29711: key=0x9D0004D6  val=0x80DBE718  ref=2
+  slot 29731: key=0x890037FC  val=0x9070F510  ref=1
+  slot 29837: key=0x50009562  val=0x817F7978  ref=2
+  slot 29841: key=0x870000E9  val=0x903C4F78  ref=1
+  slot 29998: key=0x23100190  val=0x909D5454  ref=1
+  slot 30080: key=0x87001D80  val=0x935DC740  ref=1
+  slot 30134: key=0x6100400B  val=0x908AA164  ref=1
+  slot 30182: key=0x85004A16  val=0x908B18B8  ref=1
+  slot 30229: key=0x87001DAD  val=0x908AD270  ref=2
+  slot 30300: key=0x25100A21  val=0x909D54AC  ref=1
+  slot 30382: key=0x3600065A  val=0x817F8BE8  ref=1
+  slot 30386: key=0xE111B8BF  val=0x908ACE58  ref=1
+  slot 30397: key=0x360004E5  val=0x80DDF988  ref=3
+  slot 30429: key=0x8700301A  val=0x908AC1F0  ref=1
+  slot 30459: key=0xB41016AD  val=0x90B1CE28  ref=1
+  slot 30470: key=0x8900382E  val=0x90839DC8  ref=1
+  slot 30498: key=0x87002D5D  val=0x935DCE00  ref=1
+  slot 30527: key=0xB41016A9  val=0x90B378F4  ref=1
+  slot 30696: key=0x25101EE8  val=0x80DED890  ref=1
+  slot 30827: key=0xA600118A  val=0x817F8F30  ref=1
+  slot 30946: key=0x890037FD  val=0x9070F290  ref=1
+  slot 30961: key=0x7B00B51B  val=0x80DEDA74  ref=1
+  slot 31091: key=0xB41016A7  val=0x90847004  ref=1
+  slot 31254: key=0x6100CD61  val=0x908A4A94  ref=1
+  slot 31284: key=0x5000E90A  val=0x908ACCF8  ref=1
+  slot 31409: key=0xB41016AE  val=0x9083A180  ref=1
+  slot 31416: key=0xB4100FE3  val=0x80DE0300  ref=1
+  slot 31426: key=0x870031EB  val=0x907105A0  ref=1
+  slot 31427: key=0x72003ADE  val=0x817F7A00  ref=1
+  slot 31465: key=0x72003881  val=0x80CDD804  ref=1
+  slot 31544: key=0xE111B8C0  val=0x908ACE84  ref=1
+  slot 31563: key=0x85004387  val=0x935DCC80  ref=1
+  slot 31646: key=0x87001DAC  val=0x908AD220  ref=2
+  slot 31852: key=0x72003B2B  val=0x817F9B60  ref=2
+  slot 31866: key=0x850055C4  val=0x908B0B98  ref=1
+  slot 31882: key=0x870033BF  val=0x935DC7A0  ref=1
+  slot 31940: key=0x72002B9C  val=0x80CD6DC8  ref=1
+  slot 32001: key=0x25100BFF  val=0x935DE680  ref=1
+  slot 32181: key=0x850038C0  val=0x908AE95C  ref=1
+  slot 32190: key=0x85005472  val=0x935DCC20  ref=1
+  slot 32259: key=0x72003B18  val=0x817F79A0  ref=1
+  slot 32277: key=0xE111B8C1  val=0x908ACEB0  ref=1
+  slot 32328: key=0x890028F2  val=0x935DCEA0  ref=1
+  slot 32347: key=0x2F009A26  val=0x80CDD7B0  ref=1
+  slot 32499: key=0x2510124B  val=0x90CAFC94  ref=1
+  slot 32620: key=0x870016D6  val=0x90709F10  ref=1
+  slot 32637: key=0x870031EA  val=0x90710820  ref=1
+
+=== LOA table (OurBuild)  base=0x9012A080  slots=32768 ===
+  Live entries: 0
+
+=== Keys in Dolphin LOA but not other ===
+  Only in Dolphin (534 keys):
+    0x0800952D
+    0x0800C2E8
+    0x0E000119
+    0x0E0001BF
+    0x0E0001C0
+    0x0E000571
+    0x0E0028DE
+    0x0E0028E5
+    0x0E002A31
+    0x0E0034CD
+    0x0E006B13
+    0x0E007372
+    0x0E007440
+    0x0E0076BA
+    0x0E0076BC
+    0x0E0076C2
+    0x0E0076C7
+    0x0E0076CA
+    0x0E0076EE
+    0x0E007762
+    0x0E0079BE
+    0x0E007BEB
+    0x0E007C10
+    0x0E008905
+    0x2310018E
+    0x23100190
+    0x251006FC
+    0x251006FD
+    0x2510073E
+    0x25100740
+    0x25100742
+    0x25100744
+    0x25100746
+    0x25100748
+    0x2510074A
+    0x2510074C
+    0x25100750
+    0x25100754
+    0x25100758
+    0x2510075A
+    0x2510075B
+    0x2510075C
+    0x25100772
+    0x25100774
+    0x25100777
+    0x25100779
+    0x2510077C
+    0x2510077E
+    0x25100920
+    0x25100A0B
+    0x25100A0D
+    0x25100A10
+    0x25100A12
+    0x25100A1F
+    0x25100A21
+    0x25100A24
+    0x25100A26
+    0x25100A2E
+    0x25100A2F
+    0x25100A33
+    0x25100A35
+    0x25100A37
+    0x25100A39
+    0x25100A3C
+    0x25100A3F
+    0x25100A40
+    0x25100A49
+    0x25100A4A
+    0x25100B7A
+    0x25100B7C
+    0x25100BFF
+    0x25100DD4
+    0x25100DE1
+    0x25100F87
+    0x25100F89
+    0x251010AB
+    0x251010AD
+    0x251010B0
+    0x251010B2
+    0x251010BF
+    0x251010C1
+    0x251010C9
+    0x251010CB
+    0x251010CD
+    0x251010CF
+    0x25101159
+    0x251011E8
+    0x251011EA
+    0x25101210
+    0x25101236
+    0x25101238
+    0x25101241
+    0x25101243
+    0x25101246
+    0x25101248
+    0x2510124B
+    0x2510124D
+    0x251013E3
+    0x251014BC
+    0x25101535
+    ... and 434 more
+  Only in Our Build (0 keys):
+
+=== Diff MEM1 tail (world objs)  0x817FC000-0x81800000 ===
+  0x817FC004: dolphin=0x7374695F  ours=0x00000000
+  0x817FC008: dolphin=0x4469616C  ours=0x00000000
+  0x817FC00C: dolphin=0x4D444649  ours=0x00000000
+  0x817FC010: dolphin=0x64000000  ours=0x00000000
+  0x817FC018: dolphin=0x7374695F  ours=0x00000000
+  0x817FC01C: dolphin=0x53706561  ours=0x00000000
+  0x817FC020: dolphin=0x6B657253  ours=0x00000000
+  0x817FC024: dolphin=0x4D580000  ours=0x00000000
+  0x817FC02C: dolphin=0x7374615F  ours=0x00000000
+  0x817FC030: dolphin=0x52657175  ours=0x00000000
+  0x817FC034: dolphin=0x65737453  ours=0x00000000
+  0x817FC038: dolphin=0x7461636B  ours=0x00000000
+  0x817FC040: dolphin=0x76615F44  ours=0x00000000
+  0x817FC044: dolphin=0x6973706C  ours=0x00000000
+  0x817FC048: dolphin=0x61795F50  ours=0x00000000
+  0x817FC04C: dolphin=0x6F730000  ours=0x00000000
+  0x817FC054: dolphin=0x665F5765  ours=0x00000000
+  0x817FC058: dolphin=0x69676874  ours=0x00000000
+  0x817FC05C: dolphin=0x436F6566  ours=0x00000000
+  0x817FC060: dolphin=0x584C0000  ours=0x00000000
+  0x817FC068: dolphin=0x665F4C69  ours=0x00000000
+  0x817FC06C: dolphin=0x66744461  ours=0x00000000
+  0x817FC070: dolphin=0x6D705469  ours=0x00000000
+  0x817FC074: dolphin=0x6D650000  ours=0x00000000
+  0x817FC078: dolphin=0x005F6669  ours=0x00000000
+  0x817FC07C: dolphin=0x665F5765  ours=0x00000000
+  0x817FC080: dolphin=0x69676874  ours=0x00000000
+  0x817FC084: dolphin=0x436F6566  ours=0x00000000
+  0x817FC088: dolphin=0x4C000000  ours=0x00000000
+  0x817FC08C: dolphin=0x00000001  ours=0x00000000
+  0x817FC098: dolphin=0x00000154  ours=0x00000000
+  0x817FC09C: dolphin=0x0000013C  ours=0x00000000
+  0x817FC0A0: dolphin=0x6F5F7374  ours=0x00000000
+  0x817FC0A4: dolphin=0x616D7000  ours=0x00000000
+  0x817FC0A8: dolphin=0x007300AA  ours=0x00000000
+  0x817FC0AC: dolphin=0x6F5F4D61  ours=0x00000000
+  0x817FC0B0: dolphin=0x73746572  ours=0x00000000
+  0x817FC0B4: dolphin=0x005F426F  ours=0x00000000
+  0x817FC0B8: dolphin=0x645F4D61  ours=0x00000000
+  0x817FC0BC: dolphin=0x73746572  ours=0x00000000
+  0x817FC0C0: dolphin=0x0061725F  ours=0x00000000
+  0x817FC0C4: dolphin=0x695F4275  ours=0x00000000
+  0x817FC0C8: dolphin=0x74746F6E  ours=0x00000000
+  0x817FC0D0: dolphin=0x695F7361  ours=0x00000000
+  0x817FC0D4: dolphin=0x6D706C65  ours=0x00000000
+  0x817FC0D8: dolphin=0x006500AA  ours=0x00000000
+  0x817FC0DC: dolphin=0x6D64665F  ours=0x00000000
+  0x817FC0E0: dolphin=0x46414445  ours=0x00000000
+  0x817FC0E4: dolphin=0x00675F49  ours=0x00000000
+  0x817FC0E8: dolphin=0x695F4850  ours=0x00000000
+  0x817FC0EC: dolphin=0x5F6F6C64  ours=0x00000000
+  0x817FC0F0: dolphin=0x0079655F  ours=0x00000000
+  0x817FC0F4: dolphin=0x695F4973  ours=0x00000000
+  0x817FC0F8: dolphin=0x42757379  ours=0x00000000
+  0x817FC100: dolphin=0x635F4661  ours=0x00000000
+  0x817FC104: dolphin=0x6465494E  ours=0x00000000
+  0x817FC108: dolphin=0x00746100  ours=0x00000000
+  0x817FC10C: dolphin=0x695F5853  ours=0x00000000
+  0x817FC110: dolphin=0x5F494400  ours=0x00000000
+  0x817FC114: dolphin=0x005F7369  ours=0x00000000
+  0x817FC118: dolphin=0x61735F58  ours=0x00000000
+  0x817FC11C: dolphin=0x7300AAAA  ours=0x00000000
+  0x817FC120: dolphin=0x0070A620  ours=0x00000000
+  0x817FC124: dolphin=0x7374695F  ours=0x00000000
+  0x817FC128: dolphin=0x54797065  ours=0x00000000
+  0x817FC130: dolphin=0x7374695F  ours=0x00000000
+  0x817FC134: dolphin=0x5072696F  ours=0x00000000
+  0x817FC138: dolphin=0x00686100  ours=0x00000000
+  0x817FC13C: dolphin=0x80D864E8  ours=0x00000000
+  0x817FC140: dolphin=0x80D75494  ours=0x00000000
+  0x817FC144: dolphin=0x00000002  ours=0x00000000
+  0x817FC148: dolphin=0x80D7E4E4  ours=0x00000000
+  0x817FC14C: dolphin=0x80D75494  ours=0x00000000
+  0x817FC150: dolphin=0x00000001  ours=0x00000000
+  0x817FC154: dolphin=0x80D764E0  ours=0x00000000
+  0x817FC158: dolphin=0x80D75494  ours=0x00000000
+  0x817FC160: dolphin=0x80D3D540  ours=0x00000000
+  0x817FC164: dolphin=0x80D2C4EC  ours=0x00000000
+  0x817FC168: dolphin=0x00000002  ours=0x00000000
+  0x817FC16C: dolphin=0x80D3553C  ours=0x00000000
+  0x817FC170: dolphin=0x80D2C4EC  ours=0x00000000
+  0x817FC174: dolphin=0x00000001  ours=0x00000000
+  0x817FC178: dolphin=0x80D2D538  ours=0x00000000
+  0x817FC17C: dolphin=0x80D2C4EC  ours=0x00000000
+  0x817FC184: dolphin=0x80CF4598  ours=0x00000000
+  0x817FC188: dolphin=0x80CE3544  ours=0x00000000
+  0x817FC18C: dolphin=0x00000002  ours=0x00000000
+  0x817FC198: dolphin=0x00000184  ours=0x00000000
+  0x817FC19C: dolphin=0x0000016A  ours=0x00000000
+  0x817FC1A0: dolphin=0x0000AC80  ours=0x00000000
+  0x817FC1A4: dolphin=0x00000080  ours=0x00000000
+  0x817FC1A8: dolphin=0x00008D44  ours=0x00000000
+  0x817FC1AC: dolphin=0x00000100  ours=0x00000000
+  0x817FC1B0: dolphin=0x80DC3CAC  ours=0x00000000
+  0x817FC1B4: dolphin=0x80DC1DC4  ours=0x00000000
+  0x817FC1BC: dolphin=0x00000001  ours=0x00000000
+  0x817FC1C0: dolphin=0x00000004  ours=0x00000000
+  0x817FC1C4: dolphin=0x00000004  ours=0x00000000
+  0x817FC1C8: dolphin=0x817FE518  ours=0x00000000
+  0x817FC1CC: dolphin=0x80DC18CC  ours=0x00000000
+  0x817FC1D4: dolphin=0x0000000C  ours=0x00000000
+  0x817FC1D8: dolphin=0x00000034  ours=0x00000000
+  0x817FC1E4: dolphin=0x80DC13BC  ours=0x00000000
+  0x817FC1E8: dolphin=0x695F4442  ours=0x00000000
+  0x817FC1EC: dolphin=0x475F5573  ours=0x00000000
+  0x817FC1F0: dolphin=0x65417578  ours=0x00000000
+  0x817FC1F4: dolphin=0x4368616E  ours=0x00000000
+  0x817FC1F8: dolphin=0x6E656C00  ours=0x00000000
+  0x817FC204: dolphin=0x00000004  ours=0x00000000
+  0x817FC208: dolphin=0x00000148  ours=0x00000000
+  0x817FC20C: dolphin=0x00000148  ours=0x00000000
+  0x817FC210: dolphin=0x80DC1600  ours=0x00000000
+  0x817FC214: dolphin=0x80DC12D8  ours=0x00000000
+  0x817FC218: dolphin=0x665F4C61  ours=0x00000000
+  0x817FC21C: dolphin=0x756E6368  ours=0x00000000
+  0x817FC220: dolphin=0x416C7469  ours=0x00000000
+  0x817FC224: dolphin=0x74756465  ours=0x00000000
+  0x817FC228: dolphin=0x4D617800  ours=0x00000000
+  0x817FC22C: dolphin=0x00CE3A04  ours=0x00000000
+  0x817FC230: dolphin=0x665F4472  ours=0x00000000
+  0x817FC234: dolphin=0x6F704672  ours=0x00000000
+  0x817FC238: dolphin=0x65717565  ours=0x00000000
+  0x817FC23C: dolphin=0x6E636558  ours=0x00000000
+  0x817FC240: dolphin=0x53000000  ours=0x00000000
+  0x817FC24C: dolphin=0x0000000B  ours=0x00000000
+  0x817FC250: dolphin=0x0000002C  ours=0x00000000
+  0x817FC254: dolphin=0x0000002C  ours=0x00000000
+  0x817FC258: dolphin=0x80DC0FA8  ours=0x00000000
+  0x817FC25C: dolphin=0x80DC0D30  ours=0x00000000
+  0x817FC260: dolphin=0x54726967  ours=0x00000000
+  0x817FC264: dolphin=0x45786578  ours=0x00000000
+  0x817FC268: dolphin=0x5F4E6561  ours=0x00000000
+  0x817FC26C: dolphin=0x72466172  ours=0x00000000
+  0x817FC270: dolphin=0x5F536574  ours=0x00000000
+  0x817FC274: dolphin=0x00CE3544  ours=0x00000000
+  0x817FC278: dolphin=0x54726967  ours=0x00000000
+  0x817FC27C: dolphin=0x54657374  ours=0x00000000
+  0x817FC280: dolphin=0x5F497465  ours=0x00000000
+  0x817FC284: dolphin=0x6D585343  ours=0x00000000
+  0x817FC288: dolphin=0x6F756E74  ours=0x00000000
+  0x817FC28C: dolphin=0x00CE34FC  ours=0x00000000
+  0x817FC298: dolphin=0x0000014C  ours=0x00000000
+  0x817FC29C: dolphin=0x00000135  ours=0x00000000
+  0x817FC2A0: dolphin=0x80DC174C  ours=0x00000000
+  0x817FC2B0: dolphin=0x73746F5F  ours=0x00000000
+  0x817FC2B4: dolphin=0x4F776E65  ours=0x00000000
+  0x817FC2B8: dolphin=0x7247616F  ours=0x00000000
+  0x817FC2C0: dolphin=0x7374695F  ours=0x00000000
+  0x817FC2C4: dolphin=0x4469616C  ours=0x00000000
+  0x817FC2C8: dolphin=0x6F674944  ours=0x00000000
+  0x817FC2D0: dolphin=0x7374695F  ours=0x00000000
+  0x817FC2D4: dolphin=0x506C6179  ours=0x00000000
+  0x817FC2D8: dolphin=0x4D6F6465  ours=0x00000000
+  0x817FC2E0: dolphin=0x73746F5F  ours=0x00000000
+  0x817FC2E4: dolphin=0x4D696372  ours=0x00000000
+  0x817FC2E8: dolphin=0x6F47616F  ours=0x00000000
+  0x817FC2F0: dolphin=0x7374695F  ours=0x00000000
+  0x817FC2F4: dolphin=0x5458474B  ours=0x00000000
+  0x817FC2F8: dolphin=0x65790000  ours=0x00000000
+  0x817FC300: dolphin=0x7374665F  ours=0x00000000
+  0x817FC304: dolphin=0x54696D65  ours=0x00000000
+  0x817FC308: dolphin=0x4F757400  ours=0x00000000
+  0x817FC310: dolphin=0x7374645F  ours=0x00000000
+  0x817FC314: dolphin=0x4469616C  ours=0x00000000
+  0x817FC318: dolphin=0x6F670000  ours=0x00000000
+  0x817FC320: dolphin=0x80DC1158  ours=0x00000000
+  0x817FC330: dolphin=0x80DC0FD8  ours=0x00000000
+  0x817FC340: dolphin=0x665F5368  ours=0x00000000
+  0x817FC344: dolphin=0x616B654C  ours=0x00000000
+  0x817FC348: dolphin=0x436F6566  ours=0x00000000
+  0x817FC350: dolphin=0x665F5368  ours=0x00000000
+  0x817FC354: dolphin=0x616B6556  ours=0x00000000
+  0x817FC358: dolphin=0x616C7565  ours=0x00000000
+  0x817FC360: dolphin=0x80DC0BB0  ours=0x00000000
+  0x817FC370: dolphin=0x80DBE43C  ours=0x00000000
+  0x817FC380: dolphin=0x4556454E  ours=0x00000000
+  0x817FC384: dolphin=0x545F5853  ours=0x00000000
+  0x817FC388: dolphin=0x5F416464  ours=0x00000000
+  0x817FC398: dolphin=0x0000013C  ours=0x00000000
+  0x817FC39C: dolphin=0x0000012B  ours=0x00000000
+  0x817FC3A0: dolphin=0x665F4C69  ours=0x00000000
+  0x817FC3A4: dolphin=0x66744461  ours=0x00000000
+  0x817FC3A8: dolphin=0x6D704465  ours=0x00000000
+  0x817FC3AC: dolphin=0x6C617900  ours=0x00000000
+  0x817FC3B4: dolphin=0x54726967  ours=0x00000000
+  0x817FC3B8: dolphin=0x45786563  ours=0x00000000
+  0x817FC3BC: dolphin=0x5F534E44  ours=0x00000000
+  0x817FC3C0: dolphin=0x506C6179  ours=0x00000000
+  0x817FC3C8: dolphin=0x54726967  ours=0x00000000
+  0x817FC3CC: dolphin=0x45786563  ours=0x00000000
+  0x817FC3D0: dolphin=0x5F584C5F  ours=0x00000000
+  0x817FC3D4: dolphin=0x436C6561  ours=0x00000000
+  0x817FC3D8: dolphin=0x6E000000  ours=0x00000000
+  0x817FC3DC: dolphin=0x54726967  ours=0x00000000
+  0x817FC3E0: dolphin=0x45786563  ours=0x00000000
+  0x817FC3E4: dolphin=0x5F537065  ours=0x00000000
+  0x817FC3E8: dolphin=0x65645365  ours=0x00000000
+  0x817FC3EC: dolphin=0x74000000  ours=0x00000000
+  0x817FC3F0: dolphin=0x4556454E  ours=0x00000000
+  0x817FC3F4: dolphin=0x545F436F  ours=0x00000000
+  ... and 3361 more differences
+  Total differing words: 3561
+
+=== Diff SDA globals  0x8058E000-0x8058F000 ===
+  0x8058E388: dolphin=0x900008B0  ours=0x9012A080
+  0x8058E394: dolphin=0x00000216  ours=0x00000000
+  0x8058E3B0: dolphin=0x900608B4  ours=0x9018A080
+  0x8058E3BC: dolphin=0x00000216  ours=0x00000000
+  0x8058EFF0: dolphin=0x3F060A92  ours=0x409BDCAE
+  0x8058EFF4: dolphin=0x3F06547F  ours=0x409BF177
+  0x8058EFF8: dolphin=0x3F069E78  ours=0x409C0652
+  0x8058EFFC: dolphin=0x3F06E87D  ours=0x409C1B40
+  Total differing words: 8
+
+=== Diff LOA manager struct  0x8058E380-0x8058E3A0 ===
+  0x8058E388: dolphin=0x900008B0  ours=0x9012A080
+  0x8058E394: dolphin=0x00000216  ours=0x00000000
+  Total differing words: 2
+
+=== Target key status ===
+  0x72000071: dolphin=YES  ours=NO
+  0x720000BE: dolphin=YES  ours=NO
+  0x720000D7: dolphin=YES  ours=NO
+  0x72002991: dolphin=YES  ours=NO
+  0x7B00024C: dolphin=YES  ours=NO
+  0x7B00026E: dolphin=YES  ours=NO

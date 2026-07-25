@@ -1,0 +1,6 @@
+// Windows resource file -- embeds the application icon into the .exe.
+//
+// Icon index 1 is what Windows Explorer uses for the file icon, and SDL2 picks
+// the same resource up for the window/taskbar icon on Windows, so this one
+// entry covers both without an SDL_SetWindowIcon call.
+1 ICON "robox.ico"

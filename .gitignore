@@ -1,0 +1,259 @@
+build/
+build-*/
+.cache/
+.vscode/
+.vs/
+.idea/
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.dylib
+*.exe
+compile_commands.json
+CMakeUserPresets.json
+
+# ---------------------------------------------------------------------------
+# Added when the repo was first put under version control (port work).
+#
+# Rule of thumb: track the SOURCES and the RECOMPILER INPUTS (the .json tables
+# that decide what gets translated and how it is bound). Everything else below
+# is build output, third-party tooling, a debug artifact, or copyrighted game
+# content that must not live in version control.
+# ---------------------------------------------------------------------------
+
+# --- third-party tooling (large, re-downloadable) --------------------------
+vendor/
+tools/dolphin/
+tools/our_build/
+_rgh_stale/
+*.zip
+
+# --- copyrighted game content ----------------------------------------------
+# The DOL, the RSO/ELF dumps and the extracted assets are retail game data.
+# They are inputs supplied locally, they never change, and committing them
+# would make this repo undistributable. Keep a separate backup of these.
+Assets/
+# splash/ is deliberately NOT under Assets/: everything under Assets/ is game
+# data, and an exception carved out of that rule is how game data gets committed
+# by accident. The splash artwork is ours and IS tracked, at splash/.
+# Extracted FROM Assets/ by tools/extract_brfna.py, so it is retail game data
+# wearing a .h extension. CMake regenerates it when missing.
+src/robox_font_a8.h
+src/robox_font_metrics.h
+# Same problem, different tool. wii_font_* came out of a dumped game texture
+# (tools/extract_font.py reads tex_0068_va90f28240_256x256_fmt14.png) and
+# wii_death_wav.h is a ripped system sound -- 1.2 MB of retail data between
+# them, wearing .h extensions exactly like the two above.
+#
+# These were committed once and have since been untracked. They are still in
+# the history, so rewriting it is the only way to remove them completely.
+src/wii_font_rgba.h
+src/wii_font_metrics.h
+src/wii_death_wav.h
+
+# Mod data, all of it derived or third-party:
+#   robox.dls  built from Assets/music/robox.wt + robox.pcm by sdk/robox_dls.c
+#              on first run, so it never needs to be committed
+#   mario.chr  SMB1 character data
+#   wavs/      user music packs, whatever they happen to contain
+# The .cfg defaults ARE ours and stay tracked -- see the negations.
+mods/*
+!mods/mods.cfg
+!mods/wav_music.cfg
+
+# Baked by tools/bin2c.py at configure time from sources that ARE committed
+# (Setup/*.rbxs, mods/*.cfg, splash/*). Just hex derived from them.
+src/generated_setup/
+
+# --- the recompiler ---------------------------------------------------------
+# Lives in its own repository, the way XenonRecomp sits beside UnleashedRecomp.
+# These files may still be present locally from before the split; they are not
+# part of this repository.
+recompiler.py
+recompile_wii.py
+func_discovery.py
+ppc_disasm.py
+elf_parser.py
+elf_loader.py
+dol_loader.py
+rso_loader.py
+hle_name_map.py
+gen_modules_h.py
+sig_scan.py
+apply_music_hooks.py
+regen_robox.sh
+templates/
+func_list.json
+hle_registry.json
+module_manifest.json
+recompile_manifest.json
+extra_funcs.json
+identified_funcs.json
+robox_matched_names.json
+dol_info.json
+string_xrefs.json
+align_proposals.json
+recomp_config.json
+recomp_config.example.json
+
+# --- recompiled game code ---------------------------------------------------
+# A line-by-line translation of the retail executable, and therefore a
+# derivative of it exactly as Robox USA.dol is. Not committed; generated at
+# configure time from the user's own copy of the game. See the
+# ROBOX_RECOMPILER / ROBOX_DOL block in CMakeLists.txt.
+#
+# Note this must come AFTER any src/generated_setup rule and be spelled with
+# the trailing slash, or it will not match what you think it matches.
+src/generated/
+
+# Where you drop your own game executable for the build to recompile from,
+# named to match UnleashedRecompLib/private/. Anchored with a leading slash:
+# unanchored it also swallowed discord-rpc's Private/ source directories,
+# which are vendored third-party code that must stay tracked.
+/private/
+
+# --- leftovers from the previous port ---------------------------------------
+# This tree started as a Rabbids Go Home recomp. Nothing named rgh* is used by
+# this build (CMake takes robox.rc), and some of it carries absolute paths from
+# a machine that is not yours.
+rgh*.rc
+rgh_icon_*.ico
+rgh_recomp_handoff.md
+rgh_sig_matches.json
+scan_rgh_bf.py
+
+# --- one-shot patch scripts, all superseded ---------------------------------
+# Two kinds, neither of which should ship:
+#
+# 1. Post-processing patches over src/generated/. Every one of these fixes now
+#    lives in recompiler.py itself, so a fresh regen already emits the correct
+#    form and re-running them would at best be a no-op:
+#      fix_fmadd_order   -> recompiler.py:1277  A-form operand order
+#      fix_psq_r0base    -> recompiler.py:1541  gpr_or_zero for psq_lx/stx
+#      fix_fpr           -> ps1_dup, all 14 single-precision mnemonics
+#      fix_bctr_tailcall -> recompiler.py:383   PPC_TAIL ppc_jump_indirect
+#      fix_bctr_switch   -> recompiler.py:332 + recompile_wii.py:830
+#
+# 2. One-time edits to sdk/ sources, long since applied. These are actively
+#    DANGEROUS to run now: fix_gl.py truncates sdk/gx_ogl.c at the line
+#    `static GLuint crash_prog = 0;` (still present, so it would delete every
+#    line after it), and fix_bink_sync.py targets sdk/bink_hle.c, which no
+#    longer exists.
+fix_*.py
+add_fps.py
+append_gl.py
+restore_probe.py
+
+# --- vendored SDL for the 3DS target ----------------------------------------
+# 70 MB of upstream SDL, unmodified and re-downloadable. The 3DS build needs it
+# present; fetch it rather than carrying it in history.
+SDL-3DS-master/
+
+# --- build output / intermediates -------------------------------------------
+# .3dsx is a built 3DS executable. The .ogg files under Setup/ and splash/ are
+# an intermediate step between the .wav masters and the .rbxs the build bakes
+# in -- only the .rbxs are needed.
+*.3dsx
+Setup/*.ogg
+splash/*.ogg
+Robox Soundheader test.rbxs
+
+# --- local dev scripts ------------------------------------------------------
+# Ad-hoc analysis and dump tooling. Every one of these has absolute paths from
+# the author's own machine hardcoded in it, and most point at the previous
+# project entirely. Nothing in the build refers to any of them.
+#
+# If one of these ever becomes worth publishing, strip the hardcoded paths and
+# take it off this list deliberately -- do not just add it back.
+analyze_*.py
+create_tester.py
+debug_font.py
+extract_font.py
+gen_html.py
+run_smoke*.ps1
+tools/compare_dumps.py
+tools/dolphin_*.py
+tools/modding/
+
+# --- session scratch --------------------------------------------------------
+run_*.stdout
+run_*.stderr
+MENU_LOAD_*.md
+New Session Context.md
+gemini Investigation.txt
+Launch Claude.bat
+test.c
+axmix.wav
+robox_paths.cfg
+*.dol
+*.rso
+*.elf
+*.sel
+LynWiiRetail.info.json
+
+# --- debug artifacts -------------------------------------------------------
+# Traces run to hundreds of MB (trace5.txt alone is 274 MB).
+*.log
+trace*.txt
+run*.txt
+harvest*.txt
+*.err
+*.out
+err*.txt
+h[0-9].txt
+out*.txt
+smoke.*
+now_crash.*
+run_crash.*
+scratch_out.txt
+lenient_out.txt
+rea.txt
+ps_run.txt
+claude.txt
+prompt.txt
+*.report
+*.bin
+logs/
+layer_dump/
+nand/
+
+# --- screenshots / captures ------------------------------------------------
+*.png
+*.wav
+
+# --- python ----------------------------------------------------------------
+__pycache__/
+*.pyc
+
+# --- os --------------------------------------------------------------------
+Thumbs.db
+desktop.ini
+vendor-android/
+
+# --- android build ---
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/app/.cxx/
+build-android/
+build-web/
+
+# Staging copy of the web payload (renamed for a case-sensitive host).
+# Regenerated by tools/webdeploy/stage.ps1; contains the same retail assets
+# as build-web/, so it must not be committed either.
+build-web-deploy/
+.wrangler/
+
+# Reference source trees kept next to the repo but never built from.
+# mpv was evaluated for splash video playback and rejected: source-only
+# (needs meson + ffmpeg dev packages) and no wasm target. See the splash commit.
+mpv-master/
+
+# Switch-Toolbox: read-only C# reference for Nintendo container formats. Used
+# to port the BRFNA/BXFNT font parser and the Wii texture unswizzle into
+# tools/extract_brfna.py rather than guessing the layout. 167 MB, never built.
+Switch-Toolbox-master/

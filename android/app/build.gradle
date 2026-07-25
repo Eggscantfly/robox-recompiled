@@ -1,0 +1,103 @@
+apply plugin: 'com.android.application'
+
+// Robox Android app.
+//
+// Derived from SDL2's android-project template, changed to drive the project's
+// own root CMakeLists.txt (which already knows how to build for Android) rather
+// than the template's ndk-build files.
+//
+// Game data (Assets/, the DOL, mods/) is staged into the APK's assets by the
+// copyRoboxData task below. It cannot be read in place at runtime: APK assets
+// are not real files, so the engine's plain fopen() calls would fail. The
+// native side extracts them to internal storage on first launch and chdir()s
+// there -- see sdk/android_bootstrap.c.
+
+def repoRoot = file('../..')
+
+android {
+    namespace 'com.robox.recomp'
+    compileSdkVersion 35
+    ndkVersion '27.2.12479018'   // must match the NDK at ndk.dir in local.properties
+
+    defaultConfig {
+        applicationId "com.robox.recomp"
+        minSdkVersion 21
+        targetSdkVersion 35
+        versionCode 1
+        versionName "1.0"
+
+        externalNativeBuild {
+            cmake {
+                // ROBOX_SDL2_SOURCE_DIR points the root CMakeLists at the SDL2
+                // checkout it builds as a subproject.
+                arguments "-DANDROID_STL=c++_shared",
+                          "-DROBOX_SDL2_SOURCE_DIR=${repoRoot}/vendor-android/SDL2",
+                          "-DROBOX_GLES=ON"
+                // arm64-v8a for real phones. x86_64 as well because the desktop
+                // emulators (BlueStacks, the AVD images) are x86_64 and would
+                // otherwise run the whole 75 MB of recompiled code through ARM
+                // binary translation -- slow enough to be useless for testing,
+                // and an extra layer to misattribute bugs to.
+                // Each ABI is a full rebuild of ~12,800 translated functions,
+                // so keep this list short.
+                abiFilters 'arm64-v8a', 'x86_64'
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "${repoRoot}/CMakeLists.txt"
+        }
+    }
+
+    sourceSets.main {
+        assets.srcDirs = ['src/main/assets', "${buildDir}/roboxData"]
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+        }
+    }
+
+    androidResources {
+        // Game data is opaque binary; compressing it only slows first-launch
+        // extraction, since it is written back out verbatim anyway.
+        noCompress 'dol', 'tpl', 'lua', 'wt', 'pcm', 'dls', 'sf2'
+    }
+
+    lint {
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+// Stage the game data into a build dir registered as an assets source. Kept out
+// of src/main/assets so the ~37 MB of retail data is never copied into the
+// source tree, and never accidentally committed.
+task copyRoboxData(type: Copy) {
+    into "${buildDir}/roboxData"
+
+    from(repoRoot) {
+        include 'Assets/**'
+        include 'Robox USA.dol'
+    }
+    from("${repoRoot}/build/mods") {
+        into 'mods'
+    }
+}
+
+preBuild.dependsOn copyRoboxData
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+}

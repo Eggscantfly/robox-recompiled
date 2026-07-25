@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROBOX</title>
+<meta name="description" content="A web port of ROBOX, the WiiWare game.">
+<link rel="canonical" href="https://www.joykhloe.com/robox/">
+<!-- Tab icon + share preview. The PNG is inlined as a data URI so the page
+     stays fully self-contained -- no extra request, and it works from R2 with
+     no MIME setup. -->
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta property="og:title" content="ROBOX">
+<meta property="og:description" content="A web port of ROBOX, the WiiWare game.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="data:image/png;base64,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">
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #000; color: #bbb;
+    font: 13px/1.5 system-ui, sans-serif;
+    overflow: hidden;
+  }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center;
+          justify-content: center; }
+  /* The drawing buffer is sized from native code (1280x720). Here we only
+     control the DISPLAYED size: fit the viewport, keep 16:9, never upscale
+     past the buffer so it stays crisp. */
+  canvas#canvas {
+    display: block;
+    width: min(100vw, calc(100vh * 16 / 9));
+    height: min(100vh, calc(100vw * 9 / 16));
+    background: #000;
+    outline: none;
+    image-rendering: auto;
+    /* The game draws its own Wii pointer; the host arrow on top of it is a
+     * second cursor that does not line up with where you are aiming.
+     * SDL_ShowCursor cannot do this on the web build -- SDL's Emscripten
+     * backend implements it via pointer-lock, which needs a user gesture. */
+    cursor: none;
+  }
+  #status {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    padding: 6px 10px; background: rgba(0,0,0,.75);
+    font-variant-numeric: tabular-nums;
+  }
+  #status.done { display: none; }
+
+  /* Crash overlay. Hidden until something actually goes wrong; then it owns
+     the screen, because a frozen canvas with the answer buried in devtools is
+     how a crash gets misreported as "it just stopped". */
+  #crash {
+    position: fixed; inset: 0; display: none; flex-direction: column;
+    background: rgba(10, 0, 0, .94); color: #f2f2f2; z-index: 10;
+  }
+  #crash.show { display: flex; }
+  #crash h1 {
+    margin: 0; padding: 10px 14px; font-size: 15px; font-weight: 600;
+    background: #7a1010; color: #fff;
+  }
+  #crash-bar { padding: 8px 14px; display: flex; gap: 8px; align-items: center; }
+  #crash-bar button {
+    font: inherit; padding: 4px 12px; cursor: pointer;
+    background: #333; color: #eee; border: 1px solid #666; border-radius: 3px;
+  }
+  #crash-bar button:hover { background: #444; }
+  #crash-bar span { color: #999; }
+  #crash pre {
+    flex: 1; margin: 0; padding: 0 14px 14px; overflow: auto;
+    font: 12px/1.45 ui-monospace, Consolas, monospace;
+    white-space: pre-wrap; word-break: break-word;
+  }
+</style>
+</head>
+<body>
+  <div id="wrap">
+    <!-- width/height are the DRAWING BUFFER. They must be set before the
+         runtime grabs the canvas: the game blits its 640x480 EFB to this size,
+         and the default 300x150 made it render into a corner. -->
+    <canvas id="canvas" width="1280" height="720" tabindex="-1"
+            oncontextmenu="event.preventDefault()"></canvas>
+  </div>
+  <div id="status">loading…</div>
+
+  <div id="crash">
+    <h1>Robox crashed</h1>
+    <div id="crash-bar">
+      <button id="crash-copy" type="button">Copy report</button>
+      <button id="crash-hide" type="button">Hide</button>
+      <span id="crash-note"></span>
+    </div>
+    <pre id="crash-log"></pre>
+  </div>
+
+<script>
+  var statusEl = document.getElementById('status');
+
+  // -------------------------------------------------------------------------
+  // Crash reporting.
+  //
+  // Native stderr reaches us even though the game runs on a pthread worker:
+  // emscripten forwards Module.printErr to each worker, which proxies every
+  // line back to this thread. So one printErr hook captures the whole port's
+  // diagnostics, wherever they were emitted.
+  //
+  // The native reporter wraps its output in !!!ROBOX-CRASH-BEGIN/END!!!
+  // markers (see sdk/robox_profiler.c and sdk/robox_web_debug.c). Everything
+  // between them is the report; we also keep a rolling tail of ordinary log
+  // lines, because the last few hundred lines before a crash are usually what
+  // explain it.
+  // -------------------------------------------------------------------------
+  var LOG_TAIL = 400;
+  var logTail = [], crashLines = [], inCrash = false, crashShown = false;
+
+  var crashEl  = document.getElementById('crash');
+  var crashLog = document.getElementById('crash-log');
+  var crashNote = document.getElementById('crash-note');
+
+  function crashText() {
+    return crashLines.join('\n') +
+           '\n\n---- last ' + logTail.length + ' log lines before the crash ----\n' +
+           logTail.join('\n');
+  }
+
+  function showCrash(headline) {
+    if (!crashShown && headline) { crashLines.unshift(headline); }
+    crashShown = true;
+    crashLog.textContent = crashText();
+    crashEl.className = 'show';
+    statusEl.className = 'done';
+    // Survives the reload people reflexively do after a crash.
+    try { localStorage.setItem('robox.lastCrash', crashText()); } catch (e) {}
+  }
+
+  // Draw-key self-check output, kept outside the rolling tail so it survives
+  // the thousands of boot lines. "no stale keys" only means anything if you
+  // can also see that the check was switched on, so the ON/off announcement
+  // is captured here too.
+  window.roboxKeyLines = [];
+
+  function noteLine(t) {
+    var s = String(t);
+    if (s.indexOf('[GX-KEY]') >= 0) window.roboxKeyLines.push(s);
+    if (s.indexOf('[splash]') >= 0) window.roboxKeyLines.push(s);
+    if (s.indexOf('!!!ROBOX-CRASH-BEGIN!!!') >= 0) { inCrash = true; return; }
+    if (s.indexOf('!!!ROBOX-CRASH-END!!!') >= 0) {
+      inCrash = false;
+      showCrash('');
+      return;
+    }
+    if (inCrash) { crashLines.push(s); return; }
+    logTail.push(s);
+    if (logTail.length > LOG_TAIL) logTail.shift();
+  }
+
+  document.getElementById('crash-copy').addEventListener('click', function () {
+    navigator.clipboard.writeText(crashText()).then(
+      function () { crashNote.textContent = 'copied'; },
+      function () { crashNote.textContent = 'copy failed — select the text below'; });
+  });
+  document.getElementById('crash-hide').addEventListener('click', function () {
+    crashEl.className = '';
+  });
+
+  // A trap on the browser main thread (the proxied GL calls live there) never
+  // reaches the native handler, and neither does a worker that dies outright.
+  window.addEventListener('error', function (e) {
+    crashLines.push('window error: ' + (e.message || e.type));
+    if (e.error && e.error.stack) crashLines.push(e.error.stack);
+    showCrash('Uncaught error on the page (not caught by the native handler).');
+  });
+  window.addEventListener('unhandledrejection', function (e) {
+    crashLines.push('unhandled rejection: ' + (e.reason && e.reason.stack ?
+                    e.reason.stack : e.reason));
+    showCrash('Unhandled promise rejection.');
+  });
+
+  // -------------------------------------------------------------------------
+  // Save persistence.
+  //
+  // The guest writes its save slots with plain fopen/fwrite into "nand/",
+  // which on this target is MEMFS -- RAM that dies with the tab. IDBFS backs
+  // that one directory with IndexedDB so saves survive a reload.
+  //
+  // All of this runs on the browser MAIN thread deliberately: there is exactly
+  // one filesystem and the main thread owns it. The guest worker's file I/O is
+  // already proxied here by emscripten (every FS syscall starts with
+  // `if (ENVIRONMENT_IS_PTHREAD) return proxyToMainThread(...)`), which is why
+  // the game itself needs no changes.
+  //
+  // IDBFS's autoPersist is deliberately NOT used. It flushes on every mutation
+  // including the truncate inside NANDCreate, so a tab closed in the wrong
+  // millisecond could publish a 0-byte slot over a good save. Corruption is a
+  // worse bug than the volatility being fixed. The guest tells us when a save
+  // is genuinely complete instead -- see hle_NANDClose in sdk/robox_io.c.
+  // -------------------------------------------------------------------------
+  var NAND_DIR = '/nand';
+  var nandReady = false;
+
+  // Fetch an Emscripten runtime export WITHOUT tripping its guard.
+  //
+  // A runtime method that is not in EXPORTED_RUNTIME_METHODS is installed as a
+  // property whose GETTER calls abort(). So `Module.FS` does not return
+  // undefined when FS is unexported -- it kills the page. Reading the property
+  // descriptor and using only a plain `value` sidesteps that entirely.
+  //
+  // This is not hypothetical: a stale cached ROBOX.js paired with a fresh
+  // index.html took the whole game down at boot with
+  // "'FS' was not exported", from inside the save-restore code whose entire
+  // design goal was that storage must never stop the game starting.
+  function nandRt(name) {
+    var M = window.Module || {};
+    var d = Object.getOwnPropertyDescriptor(M, name);
+    if (d && d.get) return null;          // guard stub -- treat as unavailable
+    if (d && typeof d.value !== 'undefined') return d.value;
+    return null;
+  }
+
+  function nandMount(done) {
+    var fs = nandRt('FS'), idbfs = nandRt('IDBFS');
+    if (!fs || !idbfs) {
+      console.warn('[save] FS/IDBFS unavailable - progress will not be saved');
+      return done();
+    }
+    // Private browsing and partitioned contexts have no IndexedDB at all.
+    // Boot anyway on plain MEMFS: no saves is bad, no game is worse.
+    if (typeof indexedDB === 'undefined' || !indexedDB) {
+      console.warn('[save] IndexedDB unavailable - progress will not be saved');
+      return done();
+    }
+    try {
+      try { fs.mkdir(NAND_DIR); } catch (e) { /* already there */ }
+      fs.mount(idbfs, {}, NAND_DIR);
+    } catch (e) {
+      console.warn('[save] mount failed, progress will not be saved: ' + e);
+      return done();
+    }
+    // true = populate the in-memory FS FROM IndexedDB.
+    fs.syncfs(true, function (err) {
+      if (err) {
+        console.warn('[save] restore failed: ' + err);
+      } else {
+        nandReady = true;
+        console.log('[save] ready');
+      }
+      done();
+    });
+  }
+
+  // Called from the guest once a save file is closed (sdk/robox_io.c), and on
+  // the way out of the page. Never on create -- see the autoPersist note above.
+  window.roboxNandFlush = function () {
+    if (!nandReady) return;
+    var fs = nandRt('FS');
+    if (!fs) return;
+    fs.syncfs(false, function (err) {
+      if (err) console.error('[save] WRITE FAILED: ' + err);
+    });
+  };
+
+  // A tab can be closed or backgrounded without the game ever closing its
+  // file. Cheap insurance; on mobile, pagehide is often the only thing that
+  // fires before the tab is frozen.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') window.roboxNandFlush();
+  });
+  window.addEventListener('pagehide', function () { window.roboxNandFlush(); });
+
+  var Module = {
+    // ?gxverify=1 turns on the draw-key self-check (RECOMP_GX_KEY_VERIFY): it
+    // recomputes the full state hash every draw and logs "[GX-KEY] STALE KEY"
+    // if the memo disagrees. Slow, but it is what proves the memo's
+    // invalidation set is complete rather than merely believed to be.
+    preRun: [function () {
+      if (/[?&]gxverify=1/.test(location.search)) {
+        ENV.RECOMP_GX_KEY_VERIFY = '1';
+        console.warn('[robox] GX draw-key verification ON (slower)');
+      }
+      // Hold main() until the saves are back. Without the gate the game can
+      // read an empty /nand before IndexedDB has been read into it, and report
+      // "no save data" on a profile that exists.
+      var add = nandRt('addRunDependency'), rem = nandRt('removeRunDependency');
+      if (!add || !rem) {
+        try { nandMount(function () {}); } catch (e) {
+          console.warn('[save] setup failed, continuing without saves: ' + e);
+        }
+        return;
+      }
+      add('robox-nand');
+      var released = false;
+      var release = function () {
+        if (released) return;
+        released = true;
+        rem('robox-nand');
+      };
+      // Storage must never be able to wedge the boot. A five-second stall is
+      // loud and diagnosable; a page that never starts is not.
+      setTimeout(function () {
+        if (!released) console.warn('[save] storage timed out - booting without saves');
+        release();
+      }, 5000);
+      // Nothing in here may take the game down with it. The run dependency is
+      // already armed, so even a throw still releases and the game boots.
+      try { nandMount(release); } catch (e) {
+        console.warn('[save] setup failed, continuing without saves: ' + e);
+        release();
+      }
+    }],
+    canvas: (function () {
+      var c = document.getElementById('canvas');
+      // A lost WebGL context otherwise fails silently and the page just goes
+      // black, which is indistinguishable from a rendering bug.
+      c.addEventListener('webglcontextlost', function (e) {
+        e.preventDefault();
+        statusEl.className = '';
+        statusEl.textContent = 'WebGL context lost — reload the page.';
+      }, false);
+      return c;
+    })(),
+    setStatus: function (text) {
+      if (!text) { statusEl.className = 'done'; return; }
+      statusEl.className = '';
+      statusEl.textContent = text;
+    },
+    print:    function (t) { console.log(t); noteLine(t); },
+    printErr: function (t) { console.error(t); noteLine(t); },
+    // Forwarded to the workers the same way printErr is, so an abort() on the
+    // guest thread surfaces here rather than vanishing.
+    onAbort:  function (what) {
+      crashLines.push('abort(): ' + what);
+      showCrash('The runtime aborted.');
+    }
+  };
+
+  // Keyboard goes to the canvas, not the page (arrows would scroll otherwise).
+  window.addEventListener('load', function () {
+    document.getElementById('canvas').focus();
+  });
+</script>
+{{{ SCRIPT }}}
+</body>
+</html>

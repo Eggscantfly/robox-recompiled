@@ -1,0 +1,33 @@
+name = "robox-web"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# ---------------------------------------------------------------------------
+# Verified against live DNS on 2026-07-22:
+#   - zone is on Cloudflare nameservers (anna/sonny.ns.cloudflare.com)
+#   - both apex and www resolve to Cloudflare anycast IPs and answer with
+#     Server: cloudflare + CF-RAY, i.e. already PROXIED (orange cloud). No DNS
+#     change is needed, which removes the one step that could have taken the
+#     main site down.
+#   - origin is Squarespace (crumb cookie, x-contextid), currently serving a
+#     "Coming Soon" placeholder.
+#   - /robox is a soft-404 today: byte-identical to a randomly generated path,
+#     so there is no real page being shadowed.
+#
+# www is the hostname that works; the apex currently returns 526 (Cloudflare
+# cannot validate the origin certificate for joykhloe.com). The apex route is
+# kept anyway and will serve correctly regardless: a matched Worker route is
+# handled at the edge and never fetches the origin, so /robox does not care
+# that the origin behind the apex is misconfigured.
+# ---------------------------------------------------------------------------
+routes = [
+  { pattern = "joykhloe.com/robox*", zone_name = "joykhloe.com" },
+  { pattern = "www.joykhloe.com/robox*", zone_name = "joykhloe.com" },
+]
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "robox-web"
+
+[observability]
+enabled = true
