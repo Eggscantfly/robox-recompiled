@@ -257,3 +257,9 @@ mpv-master/
 # to port the BRFNA/BXFNT font parser and the Wii texture unswizzle into
 # tools/extract_brfna.py rather than guessing the layout. 167 MB, never built.
 Switch-Toolbox-master/
+
+# A TTF built from the game font by tools/font_to_ttf.py. The source is
+# retail game data, so the font is too -- installable for yourself, not
+# something to commit or redistribute.
+*.ttf
+*.otf
