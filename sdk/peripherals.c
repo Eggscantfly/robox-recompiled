@@ -345,6 +345,11 @@ void gx_execute_copy(uint32_t cmd) {
         // Dump first frame that has any non-clear pixels as a PPM to disk so
         // we can verify output without depending on the SDL window.
         static int dumped;
+        {   /* Opt-in, like the RAM dumps: this used to drop a PPM beside the
+             * executable on the first frame that drew anything. */
+            extern int robox_debug_dumps_wanted(void);
+            if (!robox_debug_dumps_wanted()) dumped = 1;
+        }
         if (!dumped) {
             for (int i = 0; i < EFB_W * EFB_H; ++i) {
                 if (soft_efb[i] != clear) {
@@ -2494,7 +2499,13 @@ DWORD WINAPI retrace_stall_watchdog(LPVOID arg) {
         fflush(stderr);
 
         // On first stall, dump guest RAM so we can diff against Dolphin's dump.
-        if (dumps == 1) {
+        //
+        // Opt-in: this is 88 MB and only means anything if you are actually
+        // diffing against a Dolphin capture. Unconditionally it dropped
+        // mem1.bin, mem2.bin and a logs/ directory beside the executable on
+        // any stall, which on a shipped build is a large surprise.
+        extern int robox_debug_dumps_wanted(void);
+        if (dumps == 1 && robox_debug_dumps_wanted()) {
             extern uint8_t *g_mem1;
             extern uint8_t *g_mem2;
             /* Relative to the working directory, like everything else that

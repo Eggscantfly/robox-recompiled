@@ -1522,6 +1522,15 @@ extern void *ppc_host_ptr(uint32_t guest_va);
 // Called from BOTH draw-time upload AND GXInitTexObj (texture creation) so we
 // catch textures the game loads into memory even if it never draws them.
 void gx_ogl_dump_tex(uint32_t va, uint32_t w, uint32_t h, uint32_t fmt) {
+    /* Opt-in with ROBOX_DUMPS, like the RAM and EFB dumps.
+     *
+     * This one hid for a while: it wrote to an absolute path on a machine that
+     * no longer existed, so it silently failed and looked disabled. Correcting
+     * the path to logs/tex_dumps/ turned it back on, and it then dropped a PNG
+     * for every unique texture the game touched -- up to its 4096 cap -- on an
+     * ordinary launch. */
+    extern int robox_debug_dumps_wanted(void);
+    if (!robox_debug_dumps_wanted()) return;
     if (!va || w == 0 || h == 0 || w > 2048 || h > 2048) return;
     static uint32_t s_dumped[4096]; static int s_nd; static int s_dirok;
     for (int i = 0; i < s_nd; ++i) if (s_dumped[i] == va) return;

@@ -126,6 +126,27 @@ static void setup_wii_boot_environment(void) {
     MEM_W8 (0x80003184, 0x81u);         // AppType = NAND (channel) boot
 }
 
+// Are the bring-up debug dumps wanted? Set ROBOX_DUMPS=1.
+//
+// Three places write one, and all three used to do it unconditionally:
+//
+//   - the watchdog below, and the FIFO stall handler in peripherals.c, each
+//     taking an 88 MB guest RAM dump (24 MEM1 + 64 MEM2) plus the logs/
+//     directory to hold it, on any hitch long enough to trip them
+//   - the software rasterizer's soft_efb.ppm, written on the first frame with
+//     any non-clear pixel
+//
+// All of them are only meaningful while diffing against a Dolphin capture.
+// On a shipped build they are just large files appearing unasked.
+int robox_debug_dumps_wanted(void) {
+    static int want = -1;
+    if (want < 0) {
+        const char *e = getenv("ROBOX_DUMPS");
+        want = (e && e[0] && e[0] != '0');
+    }
+    return want;
+}
+
 // Watchdog: reports LIVE fps once the flip counter moves, flags FREEZE with
 // a register dump when it stops, and dumps memory for post-mortem.
 #if defined(_WIN32)
@@ -162,13 +183,21 @@ static DWORD WINAPI recomp_watchdog(LPVOID arg) {
         if (d < 0x100u) ++stuck; else stuck = 0;
         last_lr = lr;
         if (stuck == 20) {
-            fprintf(stderr, "[watchdog] guest lr stuck near 0x%08x; dumping registers + RAM\n", lr);
+            fprintf(stderr, "[watchdog] guest lr stuck near 0x%08x\n", lr);
             ppc_dump_registers();
-            extern uint8_t *g_mem1, *g_mem2;
-            FILE *f = fopen("logs/mem1.bin", "wb");
-            if (f) { fwrite(g_mem1, 1, 0x01800000, f); fclose(f); }
-            f = fopen("logs/mem2.bin", "wb");
-            if (f) { fwrite(g_mem2, 1, 0x04000000, f); fclose(f); }
+            // The RAM dump is 88 MB (24 MEM1 + 64 MEM2) and is only useful if
+            // you are diffing guest memory against a Dolphin capture. Opt in
+            // with ROBOX_DUMPS; the register dump above is the part worth
+            // having by default, and it costs nothing.
+            if (robox_debug_dumps_wanted()) {
+                extern uint8_t *g_mem1, *g_mem2;
+                robox_mkdir("logs");
+                FILE *f = fopen("logs/mem1.bin", "wb");
+                if (f) { fwrite(g_mem1, 1, 0x01800000, f); fclose(f); }
+                f = fopen("logs/mem2.bin", "wb");
+                if (f) { fwrite(g_mem2, 1, 0x04000000, f); fclose(f); }
+                fprintf(stderr, "[watchdog] RAM dumped to logs/\n");
+            }
             fflush(stderr);
         }
     }
