@@ -170,6 +170,20 @@ soundfont generator byte-for-byte against the Python it was ported from, and
 the recompiler's output was diffed against a known-good tree before the
 generated code was allowed to become a build step.
 
+## Credits
+
+The approach this project takes comes from
+**[I Built a PS1 Static Recompiler With No Prior Experience (and Claude Code)](https://1379.tech/i-built-a-ps1-static-recompiler-with-no-prior-experience-and-claude-code/)**
+by Matthew Stanley (March 2026), which describes building
+[psxrecomp](https://github.com/mstan/psxrecomp) — a static recompiler for the
+original PlayStation — with Claude Code alongside Ghidra.
+
+What is borrowed is the method that article sets out: translate the binary
+ahead of time, then close the gap with an iterative loop of build, watch it
+fail, fix, and check the fix against the disassembly. The console and the
+instruction set are different here; the approach is not. This project would
+not exist in this form without that write-up.
+
 ## Licence
 
 **GPL-2.0-or-later.** Parts of the renderer are ported from Dolphin, which is
