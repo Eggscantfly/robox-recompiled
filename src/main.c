@@ -275,6 +275,12 @@ static int robox_main(int argc, char **argv) {
         // reads on its own.
         const char *located = robox_setup_dol_path();
         if (located) image_path = located;
+
+        // video_init() read the control map before setup ran, and setup is
+        // what writes controls.cfg on a first launch -- so that first run
+        // would silently use built-in defaults and only pick the file up on
+        // the next start. Re-read it now that it is definitely there.
+        { extern void controls_load(void); controls_load(); }
     }
 
     uint32_t entry = 0;

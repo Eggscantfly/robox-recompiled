@@ -27,6 +27,18 @@ Run the executable. On first launch a setup screen offers two routes:
 
 Either way it happens once and the choice is remembered.
 
+On first run the game also writes, beside the executable:
+
+| file | what it is |
+|---|---|
+| `controls.cfg` | the key map, editable, documented in its own comments |
+| `mods/mods.cfg` | which mods are on |
+| `mods/wav_music.cfg` | how to swap a song for your own audio |
+| `mods/robox.dls` | the soundfont, built from your own copy of the game |
+| `nand/` | saves, and rebinds made from the in-game menu |
+
+None are overwritten once they exist, so edits survive.
+
 ## Building
 
 Building needs two things this repository does not contain: **the recompiler**,

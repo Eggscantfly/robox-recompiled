@@ -63,6 +63,7 @@ int robox_setup_run(const char *install_dir) { (void)install_dir; return 0; }
  * nowhere to read them from yet. */
 #include "../src/generated_setup/mods_cfg.h"
 #include "../src/generated_setup/wav_music_cfg.h"
+#include "../src/generated_setup/controls_cfg.h"
 
 /* stb_vorbis is compiled as part of robox_wav.c's translation unit. Declared
  * rather than included: a third copy of the decoder in the link would be a
@@ -1155,6 +1156,16 @@ static void install_default_mods(const char *dir)
 
     snprintf(path, sizeof path, "%s/mods/wav_music.cfg", dir);
     write_if_absent(path, wav_music_cfg, wav_music_cfg_len);
+
+    /* The control map, for the same reason as the two above: video.c looks for
+     * controls.cfg beside the executable, and without it the game runs on
+     * built-in defaults that nobody can see or edit. Writing it out makes the
+     * bindings discoverable and the file is documented in its own comments.
+     *
+     * Rebinds from the in-game menu go to nand/controls.cfg, which takes
+     * precedence, so replacing this one never overrides someone's own keys. */
+    snprintf(path, sizeof path, "%s/controls.cfg", dir);
+    write_if_absent(path, controls_cfg, controls_cfg_len);
 
     /* No-op once it exists, so this is free on every launch after the first.
      * The Assets root has to be passed explicitly: after "locate files

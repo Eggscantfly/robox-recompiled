@@ -182,6 +182,23 @@ endforeach()
 # arrives with mods/ documented and editable instead of silently defaulted.
 # Only the configs: mods/robox.dls is built from the game's own robox.wt and
 # robox.pcm, and mods/mario.chr is SMB1 data -- neither can live in this repo.
+# The default control map, baked for the same reason as the mod configs: it is
+# a file the game looks for beside the executable, and a release that does not
+# carry it falls back to built-in defaults with no way to see or edit them.
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/src/generated_setup/controls_cfg.h")
+    message(STATUS "robox: baking controls.cfg")
+    execute_process(
+        COMMAND python "${CMAKE_SOURCE_DIR}/tools/bin2c.py"
+                       "${CMAKE_SOURCE_DIR}/controls.cfg"
+                       "${CMAKE_SOURCE_DIR}/src/generated_setup/controls_cfg.h"
+                       controls_cfg
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        RESULT_VARIABLE ROBOX_BIN2C_RC)
+    if(NOT ROBOX_BIN2C_RC EQUAL 0)
+        message(FATAL_ERROR "baking controls.cfg failed -- run tools/bin2c.py by hand")
+    endif()
+endif()
+
 set(ROBOX_MOD_CONFIGS "mods.cfg:mods_cfg" "wav_music.cfg:wav_music_cfg")
 foreach(entry IN LISTS ROBOX_MOD_CONFIGS)
     string(REPLACE ":" ";" parts "${entry}")
@@ -319,6 +336,22 @@ if(ANDROID)
     add_library(robox SHARED ${ROBOX_SOURCES})
 else()
     add_executable(robox ${ROBOX_SOURCES})
+endif()
+
+# No console window on Windows.
+#
+# Without this the exe is built for the console subsystem, so double-clicking
+# it pops a cmd window that sits behind the game for the whole session. The
+# game owns main() (SDL_MAIN_HANDLED above), and -mwindows only changes the PE
+# subsystem flag -- mingw's startup still enters at main(), so nothing about
+# the entry point changes.
+#
+# Safe now that a normal run is silent: stderr goes to the null device unless
+# RECOMP_LOG asks for it, and both that and the crash dump write to files
+# rather than a terminal. Run from a shell with RECOMP_LOG=1 and read
+# logs/run.log; a GUI-subsystem process has nowhere to print to.
+if(WIN32)
+    set_target_properties(robox PROPERTIES WIN32_EXECUTABLE TRUE)
 endif()
 
 target_include_directories(robox PRIVATE
