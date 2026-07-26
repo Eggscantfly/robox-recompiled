@@ -21,6 +21,7 @@ import re
 import sys
 
 import numpy as np
+from PIL import Image
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 
@@ -31,6 +32,24 @@ METRIC_H = "src/robox_font_metrics.h"
 # half-intensity edge pixel; 128 is the midpoint, which keeps the 3px strokes
 # 3px instead of fattening every one of them by a pixel.
 THRESHOLD = 128
+
+# Trace at this multiple of the source resolution.
+#
+# Nearly every glyph is axis-aligned, and for those the threshold is lossless:
+# upscaling a hard edge and cutting at 50% puts the boundary back exactly where
+# it was. 'x' and 'k' are the exceptions -- the only true diagonals in the face,
+# drawn with graduated alpha where the sub-pixel edge position lives ENTIRELY in
+# that antialiasing. Thresholding at source resolution throws it away and leaves
+# a coarse 1px staircase, which is what made those two look wrong.
+#
+# Upscaling bilinearly first recovers it: the ramp becomes a finer staircase,
+# which SIMPLIFY_TOL below then straightens back into an actual diagonal.
+SUPERSAMPLE = 4
+
+# Douglas-Peucker tolerance, in source pixels. Small enough that a real corner
+# is never rounded off, large enough to collapse a supersampled staircase into
+# the straight line it is approximating.
+SIMPLIFY_TOL = 0.34
 
 UPEM = 2048
 
@@ -102,6 +121,48 @@ def drop_collinear(points):
     return out
 
 
+def _dp(points, tol):
+    """Douglas-Peucker on an open run of points."""
+    if len(points) < 3:
+        return points
+    ax, ay = points[0]
+    bx, by = points[-1]
+    dx, dy = bx - ax, by - ay
+    span = (dx * dx + dy * dy) ** 0.5
+
+    worst, at = -1.0, 0
+    for i in range(1, len(points) - 1):
+        px, py = points[i]
+        if span == 0:
+            d = ((px - ax) ** 2 + (py - ay) ** 2) ** 0.5
+        else:
+            d = abs(dy * px - dx * py + bx * ay - by * ax) / span
+        if d > worst:
+            worst, at = d, i
+
+    if worst <= tol:
+        return [points[0], points[-1]]
+    return _dp(points[:at + 1], tol)[:-1] + _dp(points[at:], tol)
+
+
+def simplify(points, tol):
+    """Douglas-Peucker around a closed loop.
+
+    Split at the two most distant points first so the loop is reduced as two
+    open runs. Running it on a closed ring from an arbitrary start would let
+    the seam wander, which on a glyph shows up as one corner quietly losing its
+    square edge.
+    """
+    n = len(points)
+    if n < 4:
+        return points
+    ax, ay = points[0]
+    far = max(range(n), key=lambda i: (points[i][0] - ax) ** 2 + (points[i][1] - ay) ** 2)
+    a = _dp(points[:far + 1], tol)
+    b = _dp(points[far:] + [points[0]], tol)
+    return (a[:-1] + b[:-1]) or points
+
+
 def build(out_path):
     atlas = load_atlas()
     metrics = load_metrics()
@@ -142,15 +203,20 @@ def build(out_path):
         cmap[cp] = name
         widths[name] = px(adv)
 
-        cell = atlas[y:y + cell_h, x:x + cell_w] > THRESHOLD
+        alpha = atlas[y:y + cell_h, x:x + cell_w]
+        big = np.asarray(Image.fromarray(alpha).resize(
+            (cell_w * SUPERSAMPLE, cell_h * SUPERSAMPLE), Image.BILINEAR))
+        cell = big > THRESHOLD
+
         pen = TTGlyphPen(None)
         for contour in trace(cell):
-            pts = drop_collinear(contour)
+            pts = simplify(drop_collinear(contour), SIMPLIFY_TOL * SUPERSAMPLE)
             if len(pts) < 3:
                 continue
             # image space is y-down from the cell top; font space is y-up from
-            # the baseline
-            fp = [(px(cx), px(baseline - cy)) for cx, cy in pts]
+            # the baseline. Coordinates are in supersampled pixels here.
+            fp = [(px(cx / SUPERSAMPLE), px(baseline - cy / SUPERSAMPLE))
+                  for cx, cy in pts]
             pen.moveTo(fp[0])
             for p in fp[1:]:
                 pen.lineTo(p)
