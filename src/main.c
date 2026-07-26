@@ -23,7 +23,25 @@
 #endif
 #include <signal.h>
 
+// Give a crash dump somewhere to land.
+//
+// Normal runs send stderr to the null device (see main), so without this the
+// post-mortem would be written straight into nothing. Called from the fatal
+// paths only -- reopening here rather than keeping a log file open all the
+// time is what lets a clean run leave no files behind at all.
+//
+// Idempotent, and deliberately does the least possible: a crash handler is not
+// a good place to be allocating or locking.
+static void crash_log_open(void) {
+    static int done;
+    if (done) return;
+    done = 1;
+    robox_mkdir("logs");
+    freopen("logs/crash.log", "w", stderr);
+}
+
 static void on_fatal_signal(int sig) {
+    crash_log_open();
     fprintf(stderr, "\n[signal] caught signal %d -- guest register snapshot:\n", sig);
     ppc_dump_registers();
     fflush(stderr);
@@ -57,6 +75,7 @@ static LONG WINAPI on_first_chance(EXCEPTION_POINTERS *ep) {
 }
 static LONG WINAPI on_win32_exception(EXCEPTION_POINTERS *ep) {
     DWORD code = ep->ExceptionRecord->ExceptionCode;
+    crash_log_open();
     fprintf(stderr, "\n[win32-seh] code=0x%08lx host_pc=%p\n",
             (unsigned long)code, ep->ExceptionRecord->ExceptionAddress);
     ppc_dump_registers();
@@ -180,16 +199,33 @@ static int robox_main(int argc, char **argv) {
     // the reopen succeeds, so on every other platform that silently killed
     // stderr -- taking the signal handlers' register dumps with it. Create the
     // directory portably, and keep the terminal if the redirect fails.
-    robox_mkdir("logs");
 #if !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) && !defined(__3DS__)
-    // Skipped on Android (robox_android_bootstrap already points stderr at
-    // logcat), Emscripten (stderr already goes to the browser console; a log
+    // Normal runs are silent.
+    //
+    // The engine writes a great deal to stderr -- 430-odd call sites -- which
+    // is exactly what you want while porting and pure noise once it works. It
+    // goes to the null device unless RECOMP_LOG asks for it, so a clean run
+    // leaves no logs/ directory behind at all.
+    //
+    // Crash output is NOT lost by this. The fatal handlers call
+    // crash_log_open() to reopen stderr onto logs/crash.log before dumping, so
+    // a post-mortem still reaches disk on a build that is otherwise quiet.
+    //
+    // Skipped entirely on Android (robox_android_bootstrap already points
+    // stderr at logcat), Emscripten (stderr goes to the browser console, and a
     // file would land in MEMFS where nothing can read it), and 3DS (video_init
-    // routes stderr to the bottom-screen console via consoleDebugInit; a log
-    // file would need SD-card access this port deliberately avoids).
-    if (!getenv("RECOMP_NO_LOGFILE")) {
+    // routes stderr to the bottom-screen console; a file would need SD-card
+    // access this port deliberately avoids).
+    if (getenv("RECOMP_LOG")) {
+        robox_mkdir("logs");
         if (!freopen("logs/run.log", "w", stderr))
             fprintf(stdout, "[main] could not redirect stderr to logs/run.log\n");
+    } else {
+#if defined(_WIN32)
+        freopen("NUL", "w", stderr);
+#else
+        freopen("/dev/null", "w", stderr);
+#endif
     }
 #endif
 

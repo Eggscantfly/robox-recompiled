@@ -3721,9 +3721,23 @@ static int ax_advance_sample(uint32_t v, int slot) {
 
 /* Debug WAV dump of the mixer output (s16le stereo @ device rate).
  * File: axmix.wav next to the exe; capped at ~120 s. Header sizes are
- * patched on exit. */
+ * patched on exit.
+ *
+ * Off unless ROBOX_AXDUMP is set. This was on unconditionally while the audio
+ * path was being brought up, which meant every launch quietly wrote a WAV
+ * beside the executable and kept writing for two minutes -- ~23 MB of disk per
+ * run, for a diagnostic nobody outside this project wants. */
 static FILE    *g_axwav;
 static uint32_t g_axwav_bytes;
+static int      g_axwav_enabled = -1;   /* -1 = not yet checked */
+
+static int axwav_wanted(void) {
+    if (g_axwav_enabled < 0) {
+        const char *e = getenv("ROBOX_AXDUMP");
+        g_axwav_enabled = (e && e[0] && e[0] != '0');
+    }
+    return g_axwav_enabled;
+}
 static void axwav_close(void) {
     if (!g_axwav) return;
     uint32_t riff = 36 + g_axwav_bytes, data = g_axwav_bytes;
@@ -3732,6 +3746,7 @@ static void axwav_close(void) {
     fclose(g_axwav); g_axwav = NULL;
 }
 static void axwav_write(const int16_t *lr, int nframes, int freq) {
+    if (!axwav_wanted()) return;
     if (g_axwav_bytes > 120u * 48000u * 4u) { axwav_close(); return; }
     if (!g_axwav) {
         g_axwav = fopen("axmix.wav", "wb");
