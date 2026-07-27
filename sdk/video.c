@@ -301,6 +301,84 @@ static int refresh_is_60_multiple(int hz) {
     return r <= 1 || r >= 59;
 }
 
+/* ---------------------------------------------------------------------------
+ * nand/video.cfg -- display choices that survive a restart.
+ *
+ * Both settings here were adjustable and neither was remembered, so the fix
+ * for a problem had to be reapplied on every launch:
+ *
+ *   fullscreen      F11 toggles it. Streaming a borderless-fullscreen window
+ *                   over Discord can hang the present outright -- Windows
+ *                   promotes a FOCUSED fullscreen window to independent flip,
+ *                   bypassing the compositor, and a capture that needs a
+ *                   composed copy then fights it every frame. The window
+ *                   freezes while focused and runs while it is not, which is
+ *                   the reverse of what anyone expects. Windowed avoids it,
+ *                   and now stays avoided.
+ *
+ *   internal_scale  the resolution multiplier. Auto-picks from panel height,
+ *                   but anyone raising it for capture wants it to stick.
+ *
+ * Under nand/ with controls.cfg, for the same reason: a real directory on
+ * desktop and an IndexedDB-backed mount on web, so one path persists on every
+ * target. Absent or unreadable means "no preference" and the defaults apply --
+ * this file is never required.
+ * ------------------------------------------------------------------------- */
+#define VIDEO_CFG_PATH "nand/video.cfg"
+
+/* Defined further down with the controls parser, which uses the same
+ * "key = value, # comments" shape and the same trimming. */
+static char *ctrl_trim(char *s);
+
+static int s_cfg_fullscreen = -1;   /* -1 = unset, fall back to the default */
+static int s_cfg_ir_scale   = -1;
+
+static void video_cfg_load(void) {
+    static int done;
+    if (done) return;
+    done = 1;
+    FILE *f = fopen(VIDEO_CFG_PATH, "r");
+    if (!f) return;
+    char line[128];
+    while (fgets(line, sizeof line, f)) {
+        char *hash = strchr(line, '#'); if (hash) *hash = 0;
+        char *eq = strchr(line, '=');   if (!eq)  continue;
+        *eq = 0;
+        char *k = ctrl_trim(line), *v = ctrl_trim(eq + 1);
+        if (!*k || !*v) continue;
+        if      (!strcmp(k, "fullscreen"))     s_cfg_fullscreen = atoi(v) ? 1 : 0;
+        else if (!strcmp(k, "internal_scale")) s_cfg_ir_scale   = atoi(v);
+    }
+    fclose(f);
+}
+
+/* Called whenever one of them changes. Writes both every time so the file is
+ * always complete and hand-editable. */
+static void video_cfg_save(void) {
+    extern void robox_nand_prepare(void);
+    robox_nand_prepare();
+    FILE *f = fopen(VIDEO_CFG_PATH, "w");
+    if (!f) return;
+    fprintf(f, "# Robox display settings. Written by the game; safe to edit.\n");
+    fprintf(f, "# fullscreen     0 or 1   (F11 toggles it in game)\n");
+    fprintf(f, "# internal_scale 1..4     resolution multiplier over 640x480\n");
+    if (s_cfg_fullscreen >= 0) fprintf(f, "fullscreen = %d\n", s_cfg_fullscreen);
+    if (s_cfg_ir_scale   >  0) fprintf(f, "internal_scale = %d\n", s_cfg_ir_scale);
+    fclose(f);
+}
+
+/* Read by gx_ogl.c's scale picker; -1 means the user has expressed no
+ * preference and the panel-height heuristic should decide. */
+int video_cfg_get_ir_scale(void) { video_cfg_load(); return s_cfg_ir_scale; }
+
+void video_cfg_set_ir_scale(int s) {
+    if (s < 1 || s > 4) return;
+    video_cfg_load();
+    if (s_cfg_ir_scale == s) return;
+    s_cfg_ir_scale = s;
+    video_cfg_save();
+}
+
 /* Apply an interval to the live GL context. Called only on the present/GL
  * thread (init and the menu event loop both run there). Returns what stuck --
  * a driver may refuse adaptive, or refuse to turn vsync off. */
@@ -1317,6 +1395,11 @@ void video_init(void) {
      * requires a user gesture that does not exist at init. */
     Uint32 win_flags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
     int want_fullscreen = 1;
+    /* A remembered F11 choice beats the default; RECOMP_WINDOWED beats both,
+     * so there is always a way in from outside if a saved setting ever leaves
+     * the window somewhere unusable. */
+    video_cfg_load();
+    if (s_cfg_fullscreen >= 0) want_fullscreen = s_cfg_fullscreen;
     { const char *e = getenv("RECOMP_WINDOWED");
       if (e && e[0] && e[0] != '0') want_fullscreen = 0; }
 #if defined(__EMSCRIPTEN__)
@@ -1573,7 +1656,11 @@ void video_present(void) {
                 Uint32 on = SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
                 SDL_SetWindowFullscreen(g_window,
                                         on ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
-                fprintf(stderr, "[video] fullscreen %s\n", on ? "off" : "ON");
+                /* Remembered, so someone who had to leave fullscreen to make
+                 * streaming work does not have to do it again every launch. */
+                s_cfg_fullscreen = on ? 0 : 1;
+                video_cfg_save();
+                fprintf(stderr, "[video] fullscreen %s (saved)\n", on ? "off" : "ON");
                 fflush(stderr);
             } else if (e.key.keysym.sym == SDLK_F2) {
                 /* Mario mod: poof the robot away and spawn Mario (and back). */

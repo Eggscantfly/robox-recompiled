@@ -36,6 +36,7 @@ On first run the game also writes, beside the executable:
 | `mods/wav_music.cfg` | how to swap a song for your own audio |
 | `mods/robox.dls` | the soundfont, built from your own copy of the game |
 | `nand/` | saves, and rebinds made from the in-game menu |
+| `nand/video.cfg` | fullscreen and internal resolution, remembered when you change them |
 
 None are overwritten once they exist, so edits survive.
 
@@ -117,6 +118,17 @@ could test without all three toolchains at once, so it was not attempted.
 All three arrive with their game data already in place — the APK extracts it,
 the 3DS reads RomFS, the web build preloads MEMFS — so the setup screen
 compiles out to a no-op on each.
+
+### Streaming over Discord
+
+If the window freezes while it has focus and runs fine when it does not,
+press **F11** to leave fullscreen. Windows promotes a *focused*
+borderless-fullscreen window to independent flip presentation, bypassing the
+compositor; a screen capture that needs a composed copy then fights it every
+frame and the present blocks. Unfocused, the window falls back to normal
+composition and runs — which is why the symptom looks backwards.
+
+The choice is saved to `nand/video.cfg`, so it only has to be made once.
 
 ## Mods
 

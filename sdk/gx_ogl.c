@@ -1023,6 +1023,12 @@ static int gx_ogl_internal_scale_default(void) {
         int s = atoi(e);
         return s < 1 ? 1 : (s > EFB_SCALE_MAX ? EFB_SCALE_MAX : s);
     }
+    {   /* A choice made in the settings menu on a previous run. Beats the
+         * panel-height heuristic, loses to the environment variable. */
+        extern int video_cfg_get_ir_scale(void);
+        int saved = video_cfg_get_ir_scale();
+        if (saved >= 1 && saved <= EFB_SCALE_MAX) return saved;
+    }
 #if defined(__ANDROID__) || defined(__EMSCRIPTEN__)
     return 1;
 #else
@@ -1056,6 +1062,12 @@ int gx_ogl_get_internal_scale(void) { return g_efb_scale; }
 void gx_ogl_set_internal_scale(int scale) {
     if (scale < 1) scale = 1;
     if (scale > EFB_SCALE_MAX) scale = EFB_SCALE_MAX;
+    {   /* Remember it. Raising this for a capture and finding it back at the
+         * default next launch is the kind of thing nobody reports as a bug and
+         * everybody notices. */
+        extern void video_cfg_set_ir_scale(int s);
+        video_cfg_set_ir_scale(scale);
+    }
     if (!g_ogl_ready || scale == g_efb_scale) { gx_ogl_apply_scale_dims(scale); return; }
 
     gx_batch_flush();                       /* nothing half-drawn into the old EFB */
