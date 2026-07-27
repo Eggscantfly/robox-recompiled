@@ -1238,6 +1238,26 @@ void video_init(void) {
      * SDL consults when it makes that call. */
     SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
 
+    /* Tell Windows we handle our own scaling.
+     *
+     * Without this the process is DPI-virtualised: on a 1920x1080 panel at
+     * 125% scaling the whole desktop reports 1536x864, so the game renders
+     * into a 1536x864 buffer and Windows stretches it up to the real 1920x1080
+     * panel. Every pixel gets resampled by the compositor, and the result
+     * looks soft and blocky no matter how high the internal resolution is set
+     * -- the detail is thrown away at the very last step.
+     *
+     * Deliberately WITHOUT SDL_WINDOW_ALLOW_HIGHDPI. That flag makes
+     * SDL_GetWindowSize report logical points while the drawable stays in
+     * pixels, and ten places in gx_ogl.c and this file size their viewport and
+     * present rect from SDL_GetWindowSize. Declaring awareness alone removes
+     * the virtualisation, so window size and drawable size stay identical and
+     * every one of those sites keeps working -- they just get true pixels now.
+     *
+     * Must precede SDL_Init: SDL sets the process awareness during video init
+     * and Windows only lets it be set once. */
+    SDL_SetHint(SDL_HINT_WINDOWS_DPI_AWARENESS, "permonitorv2");
+
     /* SDL_INIT_GAMECONTROLLER is required separately from SDL_INIT_VIDEO --
      * without it no controller events are ever delivered. It is non-fatal:
      * a machine with no controller subsystem should still boot to keyboard. */
@@ -1313,6 +1333,18 @@ void video_init(void) {
         win_w, win_h,
         win_flags);
     SDL_RaiseWindow(g_window);
+    {   /* What we actually got, in real pixels. Worth logging: if DPI
+         * awareness ever fails to take, this is the line that shows it --
+         * a drawable smaller than the panel means the compositor is
+         * upscaling and the picture will look soft however it is configured. */
+        int dw = 0, dh = 0;
+        SDL_GL_GetDrawableSize(g_window, &dw, &dh);
+        SDL_DisplayMode dm;
+        if (SDL_GetCurrentDisplayMode(SDL_GetWindowDisplayIndex(g_window), &dm) == 0)
+            fprintf(stderr, "[video] drawable %dx%d on a %dx%d display\n",
+                    dw, dh, dm.w, dm.h);
+        fflush(stderr);
+    }
     /* The game draws its own Wii pointer, so the host arrow on top of it is
      * just a second cursor that does not match where you are aiming. On web
      * the shell also sets `cursor:none` on the canvas: SDL's Emscripten

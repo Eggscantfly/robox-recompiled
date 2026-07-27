@@ -145,6 +145,7 @@ intro once, then the loop region forever. Build one with `tools/make_rbxs.py`.
 | `RECOMP_NO_SETUP=1` | Never show it |
 | `RECOMP_NO_SPLASH=1` | Skip the intro |
 | `RECOMP_ASSETS=<dir>` | Use an `Assets` tree somewhere else |
+| `RECOMP_IR_SCALE=1..4` | Internal resolution multiplier over the native 640x480 EFB. Defaults to roughly the panel height (2x at 1080p, 3x at 1440p, 4x at 4K); raise it for supersampling |
 | `RECOMP_LOG=1` | Write the engine log to `logs/run.log`. Off by default — a normal run is silent and leaves no files |
 | `ROBOX_AXDUMP=1` | Dump the audio mixer output to `axmix.wav` (~23 MB for the 2-minute cap) |
 | `ROBOX_DUMPS=1` | Bring-up dumps: guest RAM on a stall (88 MB), every decoded texture as PNG, and the software EFB. All off by default |
