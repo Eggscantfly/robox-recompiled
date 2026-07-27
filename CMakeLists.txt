@@ -350,8 +350,17 @@ endif()
 # RECOMP_LOG asks for it, and both that and the crash dump write to files
 # rather than a terminal. Run from a shell with RECOMP_LOG=1 and read
 # logs/run.log; a GUI-subsystem process has nowhere to print to.
+#
+# A diagnostic build is the exception and keeps its console. The whole point of
+# that build is to say why it failed, and a GUI-subsystem process has nowhere
+# to say it -- which is precisely the hole being investigated. Run it from a
+# terminal and the output is right there even if writing the log file fails.
 if(WIN32)
-    set_target_properties(robox PROPERTIES WIN32_EXECUTABLE TRUE)
+    if(CMAKE_C_FLAGS MATCHES "ROBOX_DIAG")
+        message(STATUS "ROBOX: diagnostic build -- keeping the console subsystem")
+    else()
+        set_target_properties(robox PROPERTIES WIN32_EXECUTABLE TRUE)
+    endif()
 endif()
 
 target_include_directories(robox PRIVATE
@@ -375,16 +384,40 @@ set_source_files_properties(${FMIDI_SOURCES} sdk/robox_midi.cc PROPERTIES
 # recompiled game code is the frame-time bottleneck in gameplay (~14 ms of a
 # 16.7 ms budget at -O2), and it is an enormous pile of small functions over
 # one global context struct — exactly what better inlining and scheduling
-# help. Set ROBOX_NATIVE_ARCH=OFF if the binary must run on another machine.
-# -march=native must default OFF when cross-compiling: "native" means the build
-# host, which is meaningless (and usually an error) when targeting Android/ARM.
-# CMAKE_CROSSCOMPILING is set by the NDK and by any toolchain file.
-if(CMAKE_CROSSCOMPILING)
-    set(_robox_native_default OFF)
-else()
-    set(_robox_native_default ON)
-endif()
-option(ROBOX_NATIVE_ARCH "Optimize for this exact CPU (-march=native)" ${_robox_native_default})
+# help.
+#
+# It defaults OFF, and must stay that way, because a binary built here gets
+# handed to other people. -march=native means "assume the build machine's exact
+# CPU", and on this one that is znver3: gcc then emits AVX2, BMI2 and FMA
+# throughout, raising the floor to Intel Haswell (2013) or AMD Zen. Anything
+# older -- and every Celeron/Pentium N-series ever made, which have no AVX at
+# any generation -- dies on an illegal instruction in the first few hundred
+# instructions of startup.
+#
+# That failure is completely silent: it happens long before main(), so there is
+# no window, no message box, no log, and no crash dialog worth the name. It
+# looks exactly like double-clicking the exe and nothing happening at all,
+# which is precisely what it was reported as. Turning this on cost a release
+# that ran on the machine that built it and nowhere else.
+#
+# ON is for a build you are going to run yourself and nobody else will.
+option(ROBOX_NATIVE_ARCH "Optimize for this exact CPU (-march=native). Produces a binary that will NOT run on older CPUs -- never enable it for a build you intend to distribute." OFF)
+
+# The baseline to build against when ROBOX_NATIVE_ARCH is OFF.
+#
+#   x86-64      SSE2 only. Every 64-bit CPU ever sold. The default, and what
+#               the download most people take should be built with.
+#   x86-64-v2   SSE4.2, POPCNT. Nehalem (2008) / Bulldozer (2011).
+#   x86-64-v3   AVX2, BMI2, FMA. Haswell (2013) / Zen (2017). Most of what
+#               -march=native was buying, minus the part where the answer
+#               depends on whose machine ran the compiler.
+#
+# Prefer v3 over native for a second, faster download. native means znver3 on
+# this build host, which pulls in SSE4a -- an AMD-only extension that no Intel
+# CPU implements at any generation. gcc does not currently emit any, so such a
+# binary runs on Intel by luck rather than by design, and nothing guarantees
+# the next rebuild is as lucky. v3 is vendor-neutral and states its floor.
+set(ROBOX_ARCH "x86-64" CACHE STRING "CPU baseline when ROBOX_NATIVE_ARCH is OFF: x86-64, x86-64-v2, or x86-64-v3")
 # -O2 is the correctness floor everywhere (sibling-call optimisation, see above).
 # Desktop/web push to -O3; the 3DS stays at -O2 to keep .text small (63 MB cap,
 # and the whole executable image lives in the 3DS's limited FCRAM) and to keep
@@ -399,7 +432,27 @@ if(ROBOX_NATIVE_ARCH)
     include(CheckCCompilerFlag)
     check_c_compiler_flag(-march=native HAVE_MARCH_NATIVE)
     if(HAVE_MARCH_NATIVE)
+        message(WARNING
+            "ROBOX_NATIVE_ARCH is ON: this binary is built for THIS CPU and will "
+            "crash silently at startup on an older one. Do not distribute it.")
         target_compile_options(robox PRIVATE -march=native)
+    endif()
+elseif(NOT CMAKE_CROSSCOMPILING AND NOT ROBOX_3DS AND NOT EMSCRIPTEN)
+    # Say the baseline out loud rather than inheriting whatever the toolchain
+    # happens to default to -- the whole point here is that the answer is not
+    # allowed to depend on the machine doing the build. -mtune=generic still
+    # schedules for modern CPUs, so the default costs scheduling preference
+    # rather than instructions.
+    include(CheckCCompilerFlag)
+    check_c_compiler_flag("-march=${ROBOX_ARCH} -mtune=generic" HAVE_MARCH_BASELINE)
+    if(HAVE_MARCH_BASELINE)
+        message(STATUS "ROBOX: CPU baseline -march=${ROBOX_ARCH}")
+        target_compile_options(robox PRIVATE -march=${ROBOX_ARCH} -mtune=generic)
+    else()
+        message(FATAL_ERROR
+            "ROBOX_ARCH=${ROBOX_ARCH} is not accepted by this compiler. Silently "
+            "carrying on would fall back to the toolchain default and produce a "
+            "binary whose CPU requirements nobody knows.")
     endif()
 endif()
 
