@@ -88,6 +88,35 @@ distribution; `discord-rpc-master/LICENSE` is that notice.
 
 ---
 
+## dr_mp3 — Public domain (or MIT-0 at your option)
+
+David Reid · <https://github.com/mackron/dr_libs> · based on
+[minimp3](https://github.com/lieff/minimp3) by lieff
+
+Vendored at `vendor/dr_mp3.h`, upstream and unmodified. Used by
+`sdk/robox_net.c` to turn a downloaded MP3 into a WAV once, at download time,
+so `sdk/robox_wav.c` never has to learn a third codec. Dual-licensed public
+domain / MIT-0; neither requires attribution, and the licence text at the
+bottom of the header stays with it regardless.
+
+---
+
+## Lua 5.4.7 — MIT
+
+Copyright © 1994–2024 Lua.org, PUC-Rio · <https://www.lua.org>
+
+Vendored at `vendor/lua/`, upstream sources unmodified, minus `lua.c` and
+`luac.c` (the standalone interpreter and compiler, both of which define
+`main()`). It is the VM behind the `lua` mod — see `MODDING.md`. MIT requires
+the copyright notice and permission notice be kept with any distribution;
+`vendor/lua/README` and the header of every source file carry it.
+
+Note that this is the *port's* Lua, not the game's. Robox itself embeds a
+Lua 5.1 of its own inside `Robox USA.dol`, which is retail game data and is
+not distributed here — see below.
+
+---
+
 ## What is NOT in this repository
 
 Retail game data, and anything derived from it. None of the following is

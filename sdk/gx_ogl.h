@@ -158,7 +158,24 @@ void  gx_ogl_overlay_text(float x, float y, const char *str,
                           float r, float g, float b, float a,
                           float scale, float track);
 float gx_ogl_overlay_text_width(const char *str, float scale, float track);
+/* Arbitrary triangle with a colour per corner. Gradients, glows, beams and
+ * anything else that is not axis-aligned are built from this. */
+void  gx_ogl_overlay_tri(float x0, float y0, float r0, float g0, float b0, float a0,
+                         float x1, float y1, float r1, float g1, float b1, float a1,
+                         float x2, float y2, float r2, float g2, float b2, float a2);
 void  gx_ogl_overlay_end(void);
+
+/* Force the EFB clear colour, overriding what the guest programmed. -1 hands
+ * control back to the game. See the definition in gx_ogl.c for why an overlay
+ * rectangle is not a substitute. */
+void  gx_ogl_set_clear_override(int64_t argb_or_minus1);
+
+/* Overlay images. Loads one of the game's own .tpl textures (path relative to
+ * the game folder or to Assets/) and returns a handle, or -1. Images draw
+ * after the batched quads, so they sit on top of rects and text. */
+int   gx_ogl_overlay_load_tpl(const char *path);
+void  gx_ogl_overlay_image(int handle, float x, float y, float w, float h,
+                           float r, float g, float b, float a);
 
 #ifdef __cplusplus
 }

@@ -3800,6 +3800,49 @@ void robox_ax_note_release(uint32_t axvoice_va) {
     }
 }
 
+/* --- audio envelope, for mods ------------------------------------------- */
+//
+// The final mix already computes a frame peak for its own logging; turning
+// that into something a script can read costs two multiply-adds and gives
+// audio-reactive mods a real signal instead of a hardcoded tempo that drifts
+// against whatever is actually playing.
+//
+// Two values, because they answer different questions. `level` is a fast-
+// attack / slow-release follower: how loud is it right now. `beat` is that
+// minus a much slower average, rectified -- a transient detector, which is
+// what "flash on the beat" actually means. Written from the audio callback
+// and read from the frame thread without a lock: they are single floats whose
+// worst case is one stale read, and a mutex on the audio path would be a far
+// worse trade.
+static volatile float g_aud_fast, g_aud_slow;
+
+/* Raw mono tap, so a mod can do its own analysis (robox.audio.spectrum runs an
+ * FFT over this). A ring rather than a callback: the audio side just keeps
+ * writing and whoever reads takes the newest window, so a reader that misses a
+ * block or runs at a different rate simply sees slightly older audio instead
+ * of blocking the mixer. */
+#define AUD_RING 2048
+static float             g_aud_ring[AUD_RING];
+static volatile unsigned g_aud_ring_w;
+static volatile int      g_aud_ring_rate = 32000;
+
+/* Newest `n` samples, oldest first. Returns how many were written. */
+int robox_audio_capture(float *out, int n, int *rate_out) {
+    if (n > AUD_RING) n = AUD_RING;
+    if (n < 0) n = 0;
+    const unsigned w = g_aud_ring_w;
+    for (int i = 0; i < n; ++i)
+        out[i] = g_aud_ring[(w - (unsigned)n + (unsigned)i) & (AUD_RING - 1)];
+    if (rate_out) *rate_out = g_aud_ring_rate;
+    return n;
+}
+
+float robox_audio_level(void) { return g_aud_fast; }
+float robox_audio_beat(void) {
+    float d = (g_aud_fast - g_aud_slow) * 3.0f;
+    return d <= 0.0f ? 0.0f : (d > 1.0f ? 1.0f : d);
+}
+
 void ax_mixer_frame(void) {
     extern int  audio_device_freq(void);
     extern void audio_submit_host(const void *data, uint32_t len);
@@ -3941,7 +3984,13 @@ void ax_mixer_frame(void) {
      * game's AX voices (SFX). No-op when mods/robox.dls isn't loaded. */
     if (g_music_on) {
         extern void robox_synth_render(int32_t *mix, int nout, int freq);
-        robox_synth_render(mixbuf, nout, freq);
+        /* A Lua mod playing its own track (robox.audio.music_play -- a
+         * playlist, say) owns the music while it runs: skip the sampler, or
+         * the game's song plays underneath it. Muted, not stopped, so fmidi
+         * keeps its place and is simply heard again when the track ends. */
+        extern int robox_wav_is_direct(void);
+        if (!robox_wav_is_direct())
+            robox_synth_render(mixbuf, nout, freq);
         /* MOD: WAV music packs -- sounds only while a mapped song plays
          * (sdk/robox_wav.c); the DLS sampler is idle for that song. */
         extern void robox_wav_render(int32_t *mix, int nout, int freq);
@@ -3965,6 +4014,27 @@ void ax_mixer_frame(void) {
         out[i * 2 + 1] = (uint8_t)((uint16_t)smp & 0xFF);
         wav[i] = smp;                                     /* little-endian host */
     }
+    /* Envelope follower off the peak computed above. Attack is instant so a
+     * kick lands on the frame it happens; release and the slow average are
+     * per-block, and this block is a handful of milliseconds. */
+    {
+        float p = (float)peak / 32768.0f;
+        if (p > 1.0f) p = 1.0f;
+        float f = g_aud_fast;
+        f = (p > f) ? p : f + (p - f) * 0.18f;
+        g_aud_fast = f;
+        g_aud_slow = g_aud_slow + (f - g_aud_slow) * 0.015f;
+
+        /* Mono downmix into the ring for spectrum analysis. */
+        unsigned w = g_aud_ring_w;
+        for (int i = 0; i < nout; ++i) {
+            g_aud_ring[(w + (unsigned)i) & (AUD_RING - 1)] =
+                ((float)wav[i * 2] + (float)wav[i * 2 + 1]) * (1.0f / 65536.0f);
+        }
+        g_aud_ring_w   = w + (unsigned)nout;
+        g_aud_ring_rate = freq;
+    }
+
     audio_submit_host(out, (uint32_t)(nout * 4));
     axwav_write(wav, nout, freq);
     {

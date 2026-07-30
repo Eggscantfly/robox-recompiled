@@ -23,6 +23,112 @@
 #endif
 #include <signal.h>
 
+#ifdef ROBOX_DIAG
+/* Diagnostic build. Not shipped -- built with -DROBOX_DIAG to find out why a
+ * release does nothing at all on someone else's machine.
+ *
+ * The release is GUI-subsystem with stderr pointed at the null device, which
+ * is right for normal use and useless here: SDL_Init and SDL_CreateWindow both
+ * report their failure to stderr and simply return, so a machine that cannot
+ * make an OpenGL 3.3 window shows nothing whatsoever -- no window, no message,
+ * no file. This build makes that impossible.
+ *
+ * robox_debug.txt sits next to the executable rather than under logs/ so it is
+ * easy to find and attach, and it is UNBUFFERED so a hard crash still leaves
+ * everything written up to the instruction that died. */
+char robox_diag_log_path[1024] = "robox_debug.txt";
+
+/* Try each plausible place to write until one takes.
+ *
+ * The first attempt used to be a bare relative fopen, which writes to the
+ * CURRENT DIRECTORY -- not to the executable's folder. Those differ whenever
+ * the game is started from a shortcut, from "Run as administrator" (cwd is
+ * C:\Windows\System32, which is not writable), or from inside a ZIP that
+ * Explorer has helpfully unpacked to a temp folder. In every one of those
+ * cases the log is written somewhere nobody will ever look for it, or not at
+ * all -- and the report comes back as "it doesn't make a log".
+ *
+ * So: the executable's own directory first, then TEMP, then the Desktop, then
+ * cwd as a last resort. Whichever wins is remembered so the message box can
+ * say where to find it. */
+static int robox_diag_try(const char *path) {
+    FILE *f = freopen(path, "w", stderr);
+    if (!f) return 0;
+    setvbuf(stderr, NULL, _IONBF, 0);
+    snprintf(robox_diag_log_path, sizeof robox_diag_log_path, "%s", path);
+    return 1;
+}
+
+static void robox_diag_open(void) {
+    char path[1024];
+    int opened = 0;
+
+#if defined(_WIN32)
+    char exe[1024] = {0};
+    DWORD n = GetModuleFileNameA(NULL, exe, (DWORD)(sizeof exe - 1));
+    if (n > 0 && n < sizeof exe - 1) {
+        char *slash = strrchr(exe, '\\');
+        if (slash) {
+            *slash = 0;
+            snprintf(path, sizeof path, "%s\\robox_debug.txt", exe);
+            opened = robox_diag_try(path);
+        }
+    }
+    if (!opened) {
+        const char *tmp = getenv("TEMP");
+        if (tmp) {
+            snprintf(path, sizeof path, "%s\\robox_debug.txt", tmp);
+            opened = robox_diag_try(path);
+        }
+    }
+    if (!opened) {
+        const char *up = getenv("USERPROFILE");
+        if (up) {
+            snprintf(path, sizeof path, "%s\\Desktop\\robox_debug.txt", up);
+            opened = robox_diag_try(path);
+        }
+    }
+#endif
+    if (!opened) opened = robox_diag_try("robox_debug.txt");
+
+    fprintf(stderr, "=== ROBOX diagnostic build ===\n");
+    fprintf(stderr, "[diag] log file: %s\n", robox_diag_log_path);
+    fflush(stderr);
+
+#if defined(_WIN32)
+    /* Shown unconditionally, before anything can go wrong.
+     *
+     * This is the one message that distinguishes "the program ran and failed"
+     * from "the program never started at all" -- if no box appears, the fault
+     * is ahead of main() (blocked by SmartScreen or antivirus, a missing DLL,
+     * the wrong architecture) and no amount of logging inside the program can
+     * ever catch it. */
+    {
+        char msg[1400];
+        snprintf(msg, sizeof msg, "Diagnostic build starting.\n\nLog: %s",
+                 opened ? robox_diag_log_path
+                        : "(nowhere - every location was unwritable)");
+        MessageBoxA(NULL, msg, "ROBOX", MB_OK | MB_ICONINFORMATION);
+    }
+#endif
+}
+
+/* Say something the user can actually see. A GUI-subsystem process has no
+ * console, so without this a fatal startup failure is invisible. */
+void robox_diag_fatal(const char *what, const char *detail) {
+    fprintf(stderr, "[FATAL] %s: %s\n", what, detail ? detail : "(no detail)");
+    fflush(stderr);
+#if defined(_WIN32)
+    char msg[1024];
+    snprintf(msg, sizeof msg,
+             "ROBOX could not start.\n\n%s\n%s\n\n"
+             "Full details are in:\n%s",
+             what, detail ? detail : "", robox_diag_log_path);
+    MessageBoxA(NULL, msg, "ROBOX Recompiled", MB_OK | MB_ICONERROR);
+#endif
+}
+#endif  /* ROBOX_DIAG */
+
 // Give a crash dump somewhere to land.
 //
 // Normal runs send stderr to the null device (see main), so without this the
@@ -205,6 +311,30 @@ static DWORD WINAPI recomp_watchdog(LPVOID arg) {
 #endif
 
 static int robox_main(int argc, char **argv) {
+#ifdef ROBOX_DIAG
+    /* First thing in the process, before anything can fail quietly. */
+    robox_diag_open();
+    {
+        char cwd[1024] = {0};
+#if defined(_WIN32)
+        GetCurrentDirectoryA(sizeof cwd, cwd);
+#endif
+        fprintf(stderr, "[diag] argc=%d  cwd=%s\n", argc, cwd);
+        for (int i = 0; i < argc; ++i) fprintf(stderr, "[diag] argv[%d]=%s\n", i, argv[i]);
+        /* What is actually beside the executable. "It does nothing" is very
+         * often "SDL2.dll is missing" or "it was run from the wrong folder". */
+        static const char *look[] = { "SDL2.dll", "Robox USA.dol", "Assets",
+                                      "controls.cfg", "robox_paths.cfg" };
+        for (size_t i = 0; i < sizeof look / sizeof look[0]; ++i) {
+            FILE *p = fopen(look[i], "rb");
+            int here = p != NULL;
+            if (p) fclose(p);
+            if (!here) here = (rename(look[i], look[i]) == 0);   /* directories */
+            fprintf(stderr, "[diag] %-16s %s\n", look[i], here ? "present" : "MISSING");
+        }
+        fflush(stderr);
+    }
+#endif
 #if defined(__ANDROID__)
     // Must run before anything touches the filesystem: extracts the packaged
     // game data out of the APK to internal storage and chdir()s there, so every
@@ -245,6 +375,12 @@ static int robox_main(int argc, char **argv) {
     // file would land in MEMFS where nothing can read it), and 3DS (video_init
     // routes stderr to the bottom-screen console; a file would need SD-card
     // access this port deliberately avoids).
+#ifdef ROBOX_DIAG
+    /* Leave stderr pointing at robox_debug.txt. Without this the redirect
+     * below would send everything after startup to the null device and the
+     * diagnostic would stop exactly where it starts being interesting. */
+    fprintf(stderr, "[diag] logging stays on robox_debug.txt\n");
+#else
     if (getenv("RECOMP_LOG")) {
         robox_mkdir("logs");
         if (!freopen("logs/run.log", "w", stderr))
@@ -256,6 +392,7 @@ static int robox_main(int argc, char **argv) {
         freopen("/dev/null", "w", stderr);
 #endif
     }
+#endif  /* ROBOX_DIAG */
 #endif
 
     // Note for the web target: these are installed but never fire. A wasm trap

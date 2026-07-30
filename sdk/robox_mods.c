@@ -22,6 +22,7 @@ extern void robox_coop_init(void);
 extern void robox_discord_init(void);
 extern void robox_wav_init(void);
 extern void robox_mario_init(void);
+extern void robox_lua_init(void);
 static void mod_music_init(void);
 
 static robox_mod_t g_mods[] = {
@@ -44,6 +45,13 @@ static robox_mod_t g_mods[] = {
     { "discord", "Discord Rich Presence",
       "Shows \"Playing ROBOX Recompiled\" on your Discord profile.",
       NULL,      robox_discord_init, 1, 0 },
+
+    /* Last on purpose: a Lua mod can hook the same guest functions the C mods
+     * above patch, and whoever patches last wraps the other -- so scripts
+     * layer on top of co-op and Mario rather than being swallowed by them. */
+    { "lua", "Lua mod scripting",
+      "Runs the .lua mods in mods/lua/, with hot reload. See MODDING.md.",
+      NULL,      robox_lua_init, 1, 0 },
 };
 
 #define MOD_COUNT ((unsigned)(sizeof g_mods / sizeof g_mods[0]))

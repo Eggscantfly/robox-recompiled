@@ -143,10 +143,36 @@ it wanted.
 | `mario` | Bit-exact Super Mario Bros. movement physics |
 | `discord` | Rich Presence |
 | `coop` | Local / online co-op (work in progress, off by default) |
+| `lua` | Lua scripting for mods — see below |
 
 `.rbxs` is a small container: a 24-byte header carrying loop points in front of
 an OGG or WAV payload. Loop points are the thing a bare OGG cannot express —
 intro once, then the loop region forever. Build one with `tools/make_rbxs.py`.
+
+### Writing your own — **[MODDING.md](MODDING.md)**
+
+Every mod in the table above is C, and changing one line of any of them costs a
+full recompile of the whole translated game. So there is a scripting runtime
+too: drop a `.lua` file in `mods/lua/` and it runs, and saving it reloads it
+while the game is still going.
+
+```lua
+-- mods/lua/first.lua
+robox.on("draw", function()
+  robox.draw.text(24, 24, "hello")
+end)
+```
+
+Scripts get guest memory, hooks on any function in the game by its original Wii
+address, calls back into it, the player, input (including injecting it), HUD
+drawing and persisted settings. The examples in `mods/lua/` are written to be
+read in order.
+
+Robox also embeds a **Lua 5.1 of its own** — the engine really does ship one,
+and only ever uses it for tileset tables and translated strings. Scripts in
+`mods/lua/guest/` run inside *that* VM, during the game's own boot, with the
+engine's asset bindings in scope. No patching: they are appended to
+`script/game.lua` on its way through the content system.
 
 ## Environment variables
 
@@ -161,6 +187,7 @@ intro once, then the loop region forever. Build one with `tools/make_rbxs.py`.
 | `RECOMP_LOG=1` | Write the engine log to `logs/run.log`. Off by default — a normal run is silent and leaves no files |
 | `ROBOX_AXDUMP=1` | Dump the audio mixer output to `axmix.wav` (~23 MB for the 2-minute cap) |
 | `ROBOX_DUMPS=1` | Bring-up dumps: guest RAM on a stall (88 MB), every decoded texture as PNG, and the software EFB. All off by default |
+| `ROBOX_LUA_RELOAD=0` | Stop watching `mods/lua/` for changes. Scripts still load at startup; they just stop reloading when you save |
 
 A crash still writes `logs/crash.log` regardless of `RECOMP_LOG` — the fatal
 handlers reopen stderr onto it before dumping registers and the guest
@@ -174,7 +201,9 @@ src/            entry point and the PPC runtime
 src/generated/  recompiled PowerPC — generated, never committed
 quirks/         per-title behaviour patches
 tools/          build-time generators and standalone tests
+vendor/lua/     Lua 5.4.7, the VM behind the scripting runtime
 mods/           default mod configuration
+mods/lua/       example Lua mods; mods/lua/guest/ runs inside the game's own VM
 Setup/          the setup screen's own music and sound
 splash/         the intro animation's stills and cues
 private/        where you put your own .dol — generated, never committed

@@ -194,7 +194,19 @@ void hle_contentOpenNAND(void) {
     }
 
     char host[300];
-    rio_join(host, sizeof host, assets_root(), path);
+    /* MOD (Lua): the guest's own Lua reads every one of its files through
+     * here -- script/game.lua and everything its dofile() pulls in after it.
+     * That makes this the one place a mod can reach the game's embedded Lua
+     * 5.1 without patching the DOL: the runtime serves a merged game.lua with
+     * the guest-side scripts appended, and answers robox.host() calls, which
+     * arrive as dofile() of a path that was never a file. NULL means "an
+     * ordinary asset", which is every path but those. */
+    {
+        extern const char *robox_lua_guest_redirect(const char *guest_path);
+        const char *served = robox_lua_guest_redirect(path);
+        if (served) snprintf(host, sizeof host, "%s", served);
+        else        rio_join(host, sizeof host, assets_root(), path);
+    }
     FILE *fp = fopen(host, "rb");
     if (!fp) {
         fprintf(stderr, "[CNT] open MISS '%s' (host '%s')\n", path, host);

@@ -43,6 +43,17 @@ int robox_web_canvas_size(int *w, int *h) {
 }
 #endif
 
+/* Diagnostic build only (-DROBOX_DIAG): make a fatal startup failure visible.
+ * A release is GUI-subsystem with stderr at the null device, so these paths
+ * report to nobody and the process simply does nothing at all. Compiles away
+ * entirely in a normal build. */
+#ifdef ROBOX_DIAG
+extern void robox_diag_fatal(const char *what, const char *detail);
+#  define ROBOX_DIAG_FATAL(w, d) robox_diag_fatal((w), (d))
+#else
+#  define ROBOX_DIAG_FATAL(w, d) ((void)0)
+#endif
+
 /* Publish the frame. On the web the context is created with
  * explicitSwapControl, so the browser does NOT present automatically -- the
  * offscreen back buffer has to be committed by hand. */
@@ -512,6 +523,18 @@ int robox_level_id(void) {
     return LEVEL_NAMES[id - LEVEL_ID_FIRST] ? (int)id : -1;
 }
 
+/* The table itself, for anything that wants to enumerate levels rather than
+ * ask about the current one (robox.level.list). Returns NULL for the reserved
+ * ids -- every world sets aside 20 and none fills them -- so a caller walking
+ * first..last skips the holes by testing for NULL. */
+int robox_level_id_first(void) { return (int)LEVEL_ID_FIRST; }
+int robox_level_id_last (void) { return (int)LEVEL_ID_LAST;  }
+
+const char *robox_level_name_of(int id) {
+    if (id < (int)LEVEL_ID_FIRST || id > (int)LEVEL_ID_LAST) return NULL;
+    return LEVEL_NAMES[id - LEVEL_ID_FIRST];
+}
+
 /* Live, re-read on every call. Falls back to the loaded-file latch only while
  * the id is unknown, so the menu still has something to show at boot. */
 const char *robox_level_name(void) {
@@ -599,6 +622,19 @@ unsigned video_sideways_q(void) {
 
 uint32_t video_input_hold(void) {
     uint32_t h = g_input_hold;
+
+    /* robox.input.block(): a mod has taken control away from the player. Drop
+     * the real buttons but keep going, so the injected mask below still
+     * applies -- "block the player and drive him yourself" is one of the two
+     * reasons to want this. */
+    { extern int robox_lua_input_blocked(void); if (robox_lua_input_blocked()) h = 0; }
+
+    /* Buttons a Lua mod is holding via robox.input.press(). Merged in HERE,
+     * ahead of the rotation below, so injected input goes through the same
+     * robot-section remap a real key does -- a mod that presses "left" means
+     * the direction the player sees, not a raw d-pad bit. */
+    { extern uint32_t robox_lua_input_mask(void); h |= robox_lua_input_mask(); }
+
     const uint32_t d = h & (uint32_t)WPAD_DPAD;
     if (!d) return h;
 
@@ -643,6 +679,11 @@ static volatile float g_pad_stick_x,   g_pad_stick_y;    /* gamepad left stick *
 static volatile float g_touch_stick_x, g_touch_stick_y;  /* on-screen thumbstick */
 
 void video_input_stick(float *x, float *y) {
+    /* robox.input.block(): the stick has to go too, or "controls disabled"
+     * still leaves the player walking around on the nunchuk. */
+    { extern int robox_lua_input_blocked(void);
+      if (robox_lua_input_blocked()) { *x = 0.0f; *y = 0.0f; return; } }
+
     /* Keyboard: normalize the diagonal so it is not sqrt(2) long. */
     float kx = (float)(g_key_d - g_key_a);
     float ky = (float)(g_key_w - g_key_s);
@@ -1341,6 +1382,7 @@ void video_init(void) {
      * a machine with no controller subsystem should still boot to keyboard. */
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "[video] SDL_Init failed: %s\n", SDL_GetError());
+        ROBOX_DIAG_FATAL("SDL could not start its video system.", SDL_GetError());
         return;
     }
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0) {
@@ -1436,6 +1478,7 @@ void video_init(void) {
     SDL_ShowCursor(SDL_DISABLE);
     if (!g_window) {
         fprintf(stderr, "[video] SDL_CreateWindow failed: %s\n", SDL_GetError());
+        ROBOX_DIAG_FATAL("Could not create an OpenGL 3.3 window. The graphics driver is most likely too old, or not installed.", SDL_GetError());
         return;
     }
 
@@ -1488,6 +1531,36 @@ void video_init(void) {
     fprintf(stderr, "[video] GL context = %p (%s)\n", (void*)gl_ctx,
             gl_ctx ? "ok" : SDL_GetError()); fflush(stderr);
     if (gl_ctx) {
+        /* Who is actually driving. Logged the moment a context exists and
+         * before any shader is compiled, because the interesting failures
+         * happen during shader compilation -- and by then the "renderer ready"
+         * line that normally carries this has already been skipped. Vendor is
+         * the first thing worth knowing when a build runs on one machine and
+         * does nothing on another.
+         *
+         * Typed by hand rather than via the GL headers, which this file does
+         * not include. GL uses __stdcall on Windows; getting that wrong here
+         * would crash rather than misprint. */
+#if defined(_WIN32)
+#  define ROBOX_GLCALL __stdcall
+#else
+#  define ROBOX_GLCALL
+#endif
+        typedef const unsigned char *(ROBOX_GLCALL *robox_glGetString_fn)(unsigned int);
+        robox_glGetString_fn gl_get_string =
+            (robox_glGetString_fn)SDL_GL_GetProcAddress("glGetString");
+        if (gl_get_string) {
+            static const struct { unsigned int e; const char *label; } q[] = {
+                { 0x1F00, "vendor  " }, { 0x1F01, "renderer" },
+                { 0x1F02, "version " }, { 0x8B8C, "glsl    " },
+            };
+            for (unsigned i = 0; i < sizeof q / sizeof q[0]; ++i) {
+                const unsigned char *v = gl_get_string(q[i].e);
+                fprintf(stderr, "[video] GL %s: %s\n", q[i].label,
+                        v ? (const char *)v : "(null)");
+            }
+            fflush(stderr);
+        }
         video_vsync_init();
         gx_ogl_init();
         if (gx_ogl_ready()) {
@@ -1499,6 +1572,61 @@ void video_init(void) {
         SDL_GL_DeleteContext(gl_ctx);
     } else {
         fprintf(stderr, "[video] SDL_GL_CreateContext failed: %s\n", SDL_GetError());
+#ifdef ROBOX_DIAG
+        /* 3.3 core was refused. The useful question is not "why" but "then
+         * what CAN this driver do" -- and the only way to find out is to ask
+         * for nothing in particular and read back what arrives.
+         *
+         * A fresh window is needed rather than reusing g_window: on Windows a
+         * window's pixel format is set once and cannot be renegotiated, so a
+         * second CreateContext against the same window would fail for reasons
+         * that have nothing to do with the driver's real capability.
+         *
+         * This is what separates the two answers that look identical from the
+         * outside. "GL 1.1 / GDI Generic" means no graphics driver is
+         * installed at all and Windows is falling back to its software
+         * rasteriser. "GL 3.1 / Intel HD Graphics 3000" means a real driver
+         * that genuinely tops out below what the game needs. */
+        {
+            char cap[512];
+            snprintf(cap, sizeof cap, "%s", "could not be determined");
+            SDL_GL_ResetAttributes();
+            SDL_Window *probe = SDL_CreateWindow(
+                "probe", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                64, 64, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
+            if (probe) {
+                SDL_GLContext pctx = SDL_GL_CreateContext(probe);
+                if (pctx) {
+                    typedef const unsigned char *(ROBOX_GLCALL *gs_fn)(unsigned int);
+                    gs_fn gs = (gs_fn)SDL_GL_GetProcAddress("glGetString");
+                    if (gs) {
+                        const unsigned char *ven = gs(0x1F00);
+                        const unsigned char *ren = gs(0x1F01);
+                        const unsigned char *ver = gs(0x1F02);
+                        snprintf(cap, sizeof cap, "%s / %s / OpenGL %s",
+                                 ven ? (const char *)ven : "?",
+                                 ren ? (const char *)ren : "?",
+                                 ver ? (const char *)ver : "?");
+                    }
+                    SDL_GL_DeleteContext(pctx);
+                } else {
+                    snprintf(cap, sizeof cap,
+                             "no OpenGL context of any version (%s)", SDL_GetError());
+                }
+                SDL_DestroyWindow(probe);
+            }
+            fprintf(stderr, "[video] driver actually offers: %s\n", cap);
+            fflush(stderr);
+            {
+                char detail[768];
+                snprintf(detail, sizeof detail,
+                         "%s\n\nThis machine offers:\n%s", SDL_GetError(), cap);
+                ROBOX_DIAG_FATAL("This machine cannot provide OpenGL 3.3, which the game requires.", detail);
+            }
+        }
+#else
+        ROBOX_DIAG_FATAL("Could not create an OpenGL 3.3 context. The graphics driver is most likely too old, or not installed.", SDL_GetError());
+#endif
     }
 
     // Default to SOFTWARE renderer -- the direct3d backend on Windows
@@ -1600,6 +1728,13 @@ void video_present(void) {
         }
     }
 
+    /* Lua mods (sdk/robox_lua.c). Rides the same pump for the same reason
+     * Discord does -- the guest never returns to a host loop, so this is the
+     * only per-frame moment there is. Returns immediately when the mod is off.
+     * After the level read above, so a "level" handler sees the new id on the
+     * frame it changed. */
+    { extern void robox_lua_tick(void); robox_lua_tick(); }
+
 #if defined(__EMSCRIPTEN__)
     /* Deliver input independently of frame pacing.
      *
@@ -1623,15 +1758,40 @@ void video_present(void) {
     emscripten_current_thread_process_queued_calls();
 #endif
 
+    /* A mod holding the keyboard (the console) gets everything, and this pump
+     * touches nothing: no menu, no fullscreen toggle, no F-key mods. Otherwise
+     * typing at a prompt would trip half the port's hotkeys, and Escape --
+     * which every console in the world closes on -- would open the settings
+     * menu instead. Quitting still works; the window close box is not a key. */
+    extern int  robox_lua_capture_active(void);      /* sdk/robox_lua.h */
+    extern void robox_lua_text_input(const char *utf8);
+    const int captured = robox_lua_capture_active();
+
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
             fprintf(stderr, "[video] window closed, exiting\n");
             fflush(stderr);
             exit(0);
+        } else if (e.type == SDL_TEXTINPUT) {
+            /* Typed characters, with shift, symbols and the user's own layout
+             * already applied -- none of which scancodes can tell you. */
+            robox_lua_text_input(e.text.text);
+        } else if (captured && e.type == SDL_KEYDOWN) {
+            /* The holder sees keys through robox.on("key"), which is edge
+             * detection over SDL's keyboard state and needs nothing from here.
+             * Swallowing them here is the point: nobody else acts on them.
+             *
+             * KEYDOWN only. Every branch below that acts on a key acts on the
+             * press, while KEYUP does nothing but CLEAR held-input bits -- so
+             * ups have to keep flowing. Swallow those and a direction held
+             * when the console opened stays held in g_input_hold, and the
+             * robot walks off on his own the moment you close it. Mouse,
+             * window focus and controller events are not the keyboard and are
+             * none of capture's business either. */
         } else if (e.type == SDL_KEYDOWN && !e.key.repeat &&
                    (e.key.keysym.sym == SDLK_ESCAPE ||
-                    e.key.keysym.sym == SDLK_BACKQUOTE ||   /* browsers can eat Esc */
+                    e.key.keysym.sym == SDLK_F1 ||          /* browsers can eat Esc */
                     robox_menu_is_open())) {
             /* Escape opens the controls menu; while it is up the menu eats
              * every key so nothing steers the player behind the panel. Held

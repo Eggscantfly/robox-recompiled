@@ -25,7 +25,14 @@ CMakeUserPresets.json
 # ---------------------------------------------------------------------------
 
 # --- third-party tooling (large, re-downloadable) --------------------------
-vendor/
+# vendor/* rather than vendor/, because git cannot re-include anything under a
+# directory it has already excluded -- and vendor/lua/ has to be tracked. It is
+# not tooling: it is a build dependency the executable links, so a clone that
+# did not have it would not compile. Same reasoning as fmidi-master/ and
+# discord-rpc-master/, which are tracked for the same reason.
+vendor/*
+!vendor/lua/
+!vendor/dr_mp3.h
 tools/dolphin/
 tools/our_build/
 _rgh_stale/
@@ -60,9 +67,18 @@ src/wii_death_wav.h
 #   mario.chr  SMB1 character data
 #   wavs/      user music packs, whatever they happen to contain
 # The .cfg defaults ARE ours and stay tracked -- see the negations.
+#
+# mods/lua/ is the exception: those are OUR example mods and the documentation
+# for the scripting API is written against them, so they ship. What a mod
+# writes at runtime does not -- .cache/ is the merged script/game.lua the guest
+# bridge generates, and the .cfg files are whatever a player has toggled.
 mods/*
 !mods/mods.cfg
 !mods/wav_music.cfg
+!mods/lua/
+mods/lua/**/.cache/
+mods/lua/*.cfg
+mods/lua/**/config.cfg
 
 # Baked by tools/bin2c.py at configure time from sources that ARE committed
 # (Setup/*.rbxs, mods/*.cfg, splash/*). Just hex derived from them.

@@ -92,6 +92,43 @@ static const char *path_for_song(const char *base_lc) {
     return g_default_path[0] ? g_default_path : NULL;
 }
 
+/* Map a song at runtime (robox.audio.music_set), for a mod that produced its
+ * audio after startup -- a download, say. wav_music.cfg is read once in
+ * robox_wav_init, so without this a mod's file could never be reached.
+ *
+ * OVERWRITES a matching key rather than appending, because path_for_song
+ * returns the FIRST match: an appended duplicate would be dead, which is
+ * exactly the trap the config file has. `path` NULL removes the entry, so a
+ * mod can hand a song back to the game.
+ *
+ * Takes effect on the next song start, not mid-playback. */
+int robox_wav_set_mapping(const char *song, const char *path) {
+    if (!song || !*song) return 0;
+    char key[64];
+    lower_copy(key, sizeof key, song);
+
+    if (!strcmp(key, "*")) {
+        snprintf(g_default_path, sizeof g_default_path, "%s", path ? path : "");
+        return 1;
+    }
+    for (unsigned i = 0; i < g_map_n; ++i) {
+        if (!key_matches(g_map[i].song, key) && strcmp(g_map[i].song, key)) continue;
+        if (path) {
+            snprintf(g_map[i].path, sizeof g_map[i].path, "%s", path);
+        } else {                       /* remove: shuffle the tail down */
+            for (unsigned k = i + 1; k < g_map_n; ++k) g_map[k - 1] = g_map[k];
+            --g_map_n;
+        }
+        return 1;
+    }
+    if (!path) return 1;               /* nothing to remove */
+    if (g_map_n >= WAV_MAX_SONGS) return 0;
+    lower_copy(g_map[g_map_n].song, sizeof g_map[g_map_n].song, key);
+    snprintf(g_map[g_map_n].path, sizeof g_map[g_map_n].path, "%s", path);
+    ++g_map_n;
+    return 1;
+}
+
 void robox_wav_init(void) {
     FILE *f = fopen("mods/wav_music.cfg", "r");
     if (!f) return;                     /* registry forces us off anyway */
@@ -249,6 +286,7 @@ static struct {
     double   acc;
     float    prevL, prevR, curL, curR;
     int      playing, paused;
+    int      direct;        /* started by a mod, not by the game's SYNPrepare */
     char     song[64];
 } g_s;
 
@@ -588,6 +626,64 @@ int robox_wav_music_start(uint32_t song_va) {
     fflush(stderr);
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// direct playback: a mod puts a file on, right now
+// ---------------------------------------------------------------------------
+//
+// robox_wav_music_start above is driven by the GAME -- a song buffer reaches
+// SYNPrepare and whatever wav_music.cfg maps it to plays. A mod with a
+// PLAYLIST needs the other direction: play this file now, and tell me when it
+// is over, so it can put the next one on. That is all this is -- the same
+// src_open and the same render path, started by hand.
+//
+// The stream is flagged `direct`, which buys two things:
+//   - sdk/peripherals.c skips the DLS sampler while it runs, so the game's own
+//     song does not sit underneath the mod's track. It is a MUTE, not a stop:
+//     fmidi keeps its place and is simply heard again the moment the mod's
+//     track ends, so this is reversible with nothing to put back.
+//   - robox_wav_playing/robox_wav_is_direct let a mod tell its own track from
+//     the game starting a song over the top of it, which is what makes
+//     "has my track finished?" answerable at all.
+//
+// loop = 0 stops at the end of the file -- that stop IS the cue to advance.
+// loop = 1 leaves whatever the file's own header asked for (bare WAV/OGG loop
+// whole; RBXS says for itself).
+int robox_wav_play_file(const char *path, int loop) {
+    if (!path || !*path) return 0;
+    robox_wav_stop();
+    if (!src_open(path)) {
+        char alt[300];                  /* same mods/-relative retry as above */
+        snprintf(alt, sizeof alt, "mods/%s", path);
+        if (!src_open(alt)) {
+            fprintf(stderr, "[WAV] direct play '%s': cannot open\n", path);
+            fflush(stderr);
+            return 0;
+        }
+    }
+    if (!loop) g_s.loop_mode = LOOP_NONE;
+    g_s.playing = 1;
+    g_s.direct  = 1;
+
+    const char *base = path;            /* either slash: paths come from mods */
+    for (const char *p = path; *p; ++p)
+        if (*p == '/' || *p == '\\') base = p + 1;
+    snprintf(g_s.song, sizeof g_s.song, "%s", base);
+    fprintf(stderr, "[WAV] direct play '%s' (%s, %u Hz, %u frames, loop=%s)\n",
+            path, g_s.kind == SRC_OGG ? "ogg" : "wav", g_s.rate, g_s.frames,
+            g_s.loop_mode == LOOP_NONE ? "no" :
+            g_s.loop_mode == LOOP_ALL  ? "all" : "points");
+    fflush(stderr);
+    return 1;
+}
+
+/* What is coming out of this module right now: the song name for a mapped
+ * game song, the file's basename for a direct one, NULL for neither. */
+const char *robox_wav_current(void) { return g_s.playing ? g_s.song : NULL; }
+
+/* 1 while the current stream is a mod's, not the game's. Read every audio
+ * callback by peripherals.c, so it stays a plain field read. */
+int robox_wav_is_direct(void) { return g_s.playing && g_s.direct; }
 
 /* Game SYN play-state: 0 = pause, nonzero = resume (robox_midi_setstate). */
 void robox_wav_setstate(unsigned playing) {

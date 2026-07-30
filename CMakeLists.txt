@@ -304,6 +304,36 @@ set(FMIDI_SOURCES
     fmidi-master/sources/fmidi/fmidi_player.cc
 )
 
+# Lua 5.4 (vendored, vendor/lua/): the VM behind the .lua mods in mods/lua/.
+# Upstream sources, unmodified, minus lua.c and luac.c -- those are the
+# standalone interpreter and compiler and both define main().
+#
+# Left in plain ISO C mode on purpose: no LUA_USE_POSIX, no LUA_USE_WINDOWS.
+# That drops dlopen and popen, which this has no use for, and is the only
+# configuration that is simultaneously correct for mingw, the NDK and
+# Emscripten -- all three of which build this exact file list.
+#
+# Not built for the 3DS. That port already had to trim 26 MB of BSS to fit
+# New 3DS FCRAM and has no overlay renderer for a mod to draw with; sdk/
+# robox_lua*.c compile to no-ops there (see the __3DS__ guard in each).
+if(NOT ROBOX_3DS)
+    set(LUA_SOURCES
+        vendor/lua/lapi.c    vendor/lua/lcode.c    vendor/lua/lctype.c
+        vendor/lua/ldebug.c  vendor/lua/ldo.c      vendor/lua/ldump.c
+        vendor/lua/lfunc.c   vendor/lua/lgc.c      vendor/lua/llex.c
+        vendor/lua/lmem.c    vendor/lua/lobject.c  vendor/lua/lopcodes.c
+        vendor/lua/lparser.c vendor/lua/lstate.c   vendor/lua/lstring.c
+        vendor/lua/ltable.c  vendor/lua/ltm.c      vendor/lua/lundump.c
+        vendor/lua/lvm.c     vendor/lua/lzio.c
+        vendor/lua/lauxlib.c vendor/lua/lbaselib.c vendor/lua/lcorolib.c
+        vendor/lua/ldblib.c  vendor/lua/liolib.c   vendor/lua/lmathlib.c
+        vendor/lua/loadlib.c vendor/lua/loslib.c   vendor/lua/lstrlib.c
+        vendor/lua/ltablib.c vendor/lua/lutf8lib.c vendor/lua/linit.c
+    )
+else()
+    set(LUA_SOURCES)
+endif()
+
 # Application icon. Only Windows consumes a .rc, and the RC language has to be
 # enabled explicitly -- project() above declares C and CXX only, so without this
 # CMake treats robox.rc as an unknown extension and silently ignores it.
@@ -324,6 +354,7 @@ set(ROBOX_SOURCES
     ${SDK_SOURCES}
     ${QUIRKS_SOURCES}
     ${FMIDI_SOURCES}
+    ${LUA_SOURCES}
     sdk/robox_midi.cc
     sdk/robox_synth.cc
 )
@@ -369,6 +400,8 @@ target_include_directories(robox PRIVATE
     sdk
     quirks
     fmidi-master/sources
+    vendor/lua
+    vendor
 )
 set_source_files_properties(${FMIDI_SOURCES} sdk/robox_midi.cc PROPERTIES
     COMPILE_DEFINITIONS "FMIDI_STATIC=1;FMIDI_BUILD=1;FMIDI_DISABLE_DESCRIBE_API=1")
@@ -703,6 +736,10 @@ if(WIN32)
                         -static-libgcc -static-libstdc++
                         -Wl,-Bstatic,--whole-archive
                         -lwinpthread -Wl,--no-whole-archive,-Bdynamic)
+    # WinHTTP backs sdk/robox_net.c (robox.net.fetch). Part of Windows, so no
+    # vendored dependency, and it handles TLS and redirects itself. Everywhere
+    # else that file compiles to a stub that fails cleanly.
+    target_link_libraries(robox PRIVATE winhttp)
 endif()
 
 # ---------------------------------------------------------------------------

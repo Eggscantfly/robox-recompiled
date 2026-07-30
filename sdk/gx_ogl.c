@@ -1478,7 +1478,30 @@ void gx_ogl_efb_copy_tex(uint32_t dst_va, uint32_t sx, uint32_t sy,
 }
 
 /* Standalone EFB clear (copy command's clear bit on a texture copy). */
+/* Clear-colour override, for mods (sdk/robox_lua_api.c -> robox.video.clear).
+ *
+ * Both places that paint the whole EFB a flat colour run the guest's ARGB
+ * through here first. Nothing in the port sets it -- a normal run is bit-for-
+ * bit what the game asked for -- but a mod that moves the player outside the
+ * level needs it: with no geometry left, the only thing on screen IS the clear
+ * colour, and Robox's is 0x802b94, purple. An overlay rectangle cannot fix
+ * that, because the overlay draws over the finished frame and would cover the
+ * player along with the background. The colour has to change before the game
+ * draws, which is here.
+ *
+ * -1 = no override, pass the guest's value through untouched. */
+static int64_t g_clear_override = -1;
+
+void gx_ogl_set_clear_override(int64_t argb_or_minus1) {
+    g_clear_override = argb_or_minus1;
+}
+
+static uint32_t apply_clear_override(uint32_t guest_argb) {
+    return g_clear_override < 0 ? guest_argb : (uint32_t)g_clear_override;
+}
+
 void gx_ogl_efb_clear(uint32_t clear_argb) {
+    clear_argb = apply_clear_override(clear_argb);
     if (!g_ogl_ready) return;
     /* Report every distinct clear colour the game asks for. Boot flashes a
      * colour for about a second before the first real frame and the only way
@@ -3570,6 +3593,7 @@ void gx_ogl_efb_copy(int is_xfb, uint32_t dst_va, uint32_t w, uint32_t h,
                       uint32_t dst_stride, uint32_t clear_color_argb) {
     if (!g_ogl_ready) return;
     (void)dst_va; (void)dst_stride; (void)w; (void)h;
+    clear_color_argb = apply_clear_override(clear_color_argb);
     {   /* Same reporting as gx_ogl_efb_clear -- this is the other path that
          * can paint the whole screen a flat colour. */
         static uint32_t last = 0xDEADBEEFu;
@@ -3807,6 +3831,7 @@ void gx_ogl_present(void) {
          * one of them means that on a movie/loading frame it is invisible and
          * still swallowing every key -- which reads as the game hanging. */
         { extern void robox_mario_overlay_render(void); robox_mario_overlay_render(); }
+        { extern void robox_lua_render(void); robox_lua_render(); }
         { extern void robox_menu_render(void); robox_menu_render(); }
         if (g_show_fps) gx_ogl_render_fps();
         glBindFramebuffer(GL_FRAMEBUFFER, g_efb_fbo);
@@ -3888,6 +3913,9 @@ void gx_ogl_present(void) {
     gx_ogl_render_touch_overlay();
     /* Mario sprite overlay (robox_mario.c) draws under the menu/fps HUD. */
     { extern void robox_mario_overlay_render(void); robox_mario_overlay_render(); }
+    /* Lua mods' "draw" handlers, under the settings menu: a mod HUD must not
+     * cover the panel the player opened to turn that mod off. */
+    { extern void robox_lua_render(void); robox_lua_render(); }
     /* Ungated on purpose: the FPS overlay next door hides itself on
      * low-geometry frames, which for a menu would mean it blinks out exactly
      * when the scene behind it is simple. */
@@ -4118,9 +4146,131 @@ static void ovl_quad(float x0, float y0, float x1, float y1,
     g_ovl_nverts += 6;
 }
 
+/* --- overlay images ------------------------------------------------------
+ *
+ * The batch above is one draw call with the font atlas bound, which is what
+ * makes it cheap and is also why it can only draw glyphs and flat colour. Real
+ * game art needs a different texture, so images are collected separately and
+ * drawn after the batch, one quad each. That ordering is deliberate: an image
+ * is nearly always a cursor or an icon that belongs on top.
+ *
+ * Textures are loaded from .tpl -- the game's own format -- through the same
+ * decoder the renderer uses for guest textures, so anything in Assets/ can be
+ * drawn by a mod without converting it first.
+ * ------------------------------------------------------------------------ */
+#define OVL_MAX_TEX     16
+#define OVL_MAX_IMG     64
+
+static GLuint g_ovl_tex[OVL_MAX_TEX];
+static int    g_ovl_tex_n;
+static struct { int tex; float x, y, w, h, r, g, b, a; } g_ovl_img[OVL_MAX_IMG];
+static int    g_ovl_img_n;
+
+/* Returns a handle for gx_ogl_overlay_image, or -1. Safe to call once at
+ * startup; the GL context is up by then (video_init runs before the mods). */
+int gx_ogl_overlay_load_tpl(const char *path) {
+    if (g_ovl_tex_n >= OVL_MAX_TEX) return -1;
+
+    /* Accept a path relative to the game folder or to Assets/, so a mod can
+     * write the asset path the way it appears in the game's own data. */
+    const char *tries[3];
+    char a[512], b[512];
+    snprintf(a, sizeof a, "Assets/%s", path);
+    snprintf(b, sizeof b, "../Assets/%s", path);
+    tries[0] = path; tries[1] = a; tries[2] = b;
+
+    FILE *f = NULL;
+    for (int i = 0; i < 3 && !f; ++i) f = fopen(tries[i], "rb");
+    if (!f) { fprintf(stderr, "[ovl] tpl not found: %s\n", path); return -1; }
+
+    fseek(f, 0, SEEK_END);
+    long sz = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (sz < 32 || sz > (16 << 20)) { fclose(f); return -1; }
+    uint8_t *d = (uint8_t *)malloc((size_t)sz);
+    if (!d) { fclose(f); return -1; }
+    if (fread(d, 1, (size_t)sz, f) != (size_t)sz) { free(d); fclose(f); return -1; }
+    fclose(f);
+
+    #define BE32(p) ((uint32_t)((p)[0]<<24 | (p)[1]<<16 | (p)[2]<<8 | (p)[3]))
+    #define BE16(p) ((uint16_t)((p)[0]<<8 | (p)[1]))
+    const uint32_t tbl = BE32(d + 8);
+    if (tbl + 8 > (uint32_t)sz) { free(d); return -1; }
+    const uint32_t ih = BE32(d + tbl);
+    if (ih + 12 > (uint32_t)sz) { free(d); return -1; }
+    const int      th   = BE16(d + ih);
+    const int      tw   = BE16(d + ih + 2);
+    const uint32_t fmt  = BE32(d + ih + 4);
+    const uint32_t doff = BE32(d + ih + 8);
+    #undef BE32
+    #undef BE16
+    if (tw <= 0 || th <= 0 || tw > 2048 || th > 2048 || doff >= (uint32_t)sz) {
+        free(d); return -1;
+    }
+
+    uint8_t *rgba = (uint8_t *)calloc((size_t)tw * th, 4);
+    if (!rgba) { free(d); return -1; }
+    decode_gx_texture(rgba, d + doff, tw, th, (int)fmt);
+    free(d);
+
+    GLuint tex = 0;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tw, th, 0, GL_RGBA,
+                 GL_UNSIGNED_BYTE, rgba);
+    free(rgba);
+
+    g_ovl_tex[g_ovl_tex_n] = tex;
+    fprintf(stderr, "[ovl] loaded %s (%dx%d fmt %u) -> handle %d\n",
+            path, tw, th, fmt, g_ovl_tex_n);
+    return g_ovl_tex_n++;
+}
+
+void gx_ogl_overlay_image(int handle, float x, float y, float w, float h,
+                          float r, float g, float b, float a) {
+    if (handle < 0 || handle >= g_ovl_tex_n) return;
+    if (g_ovl_img_n >= OVL_MAX_IMG) return;
+    g_ovl_img[g_ovl_img_n].tex = handle;
+    g_ovl_img[g_ovl_img_n].x = x; g_ovl_img[g_ovl_img_n].y = y;
+    g_ovl_img[g_ovl_img_n].w = w; g_ovl_img[g_ovl_img_n].h = h;
+    g_ovl_img[g_ovl_img_n].r = r; g_ovl_img[g_ovl_img_n].g = g;
+    g_ovl_img[g_ovl_img_n].b = b; g_ovl_img[g_ovl_img_n].a = a;
+    ++g_ovl_img_n;
+}
+
 void gx_ogl_overlay_begin(void) {
     init_text_renderer();
     g_ovl_nverts = 0;
+    g_ovl_img_n  = 0;
+}
+
+/* Arbitrary triangle, colour per corner.
+ *
+ * The batcher's vertex is already x,y,u,v,r,g,b,a and it already draws
+ * triangles -- a rect is just two of them pointed at the white texel. So this
+ * adds no machinery, it only stops hiding what is there. It is the one
+ * primitive worth exposing, because everything the rect API cannot do falls
+ * out of it in a few lines of script: a gradient is two triangles with
+ * different corner colours, a glow is a fan with an opaque centre and a
+ * transparent rim, a light beam is a quad that fades along its length. Adding
+ * disc() and beam() down here in C instead would have been more code and less
+ * reach. */
+void gx_ogl_overlay_tri(float x0, float y0, float r0, float g0, float b0, float a0,
+                        float x1, float y1, float r1, float g1, float b1, float a1,
+                        float x2, float y2, float r2, float g2, float b2, float a2) {
+    if (g_ovl_nverts + 3 > OVL_MAX_QUADS * 6) return;   /* drop, never scribble */
+    float *p = &g_ovl_verts[g_ovl_nverts * 8];
+    const float v[24] = {
+        x0, y0, OVL_WHITE_U, OVL_WHITE_V, r0, g0, b0, a0,
+        x1, y1, OVL_WHITE_U, OVL_WHITE_V, r1, g1, b1, a1,
+        x2, y2, OVL_WHITE_U, OVL_WHITE_V, r2, g2, b2, a2
+    };
+    for (int i = 0; i < 24; ++i) p[i] = v[i];
+    g_ovl_nverts += 3;
 }
 
 void gx_ogl_overlay_rect(float x, float y, float w, float h,
@@ -4172,7 +4322,7 @@ void gx_ogl_overlay_outline(float x, float y, float w, float h, float t,
 }
 
 void gx_ogl_overlay_end(void) {
-    if (!g_ovl_nverts) return;
+    if (!g_ovl_nverts && !g_ovl_img_n) return;
 
     /* Snapshot every piece of GL state this function touches.
      *
@@ -4218,9 +4368,30 @@ void gx_ogl_overlay_end(void) {
     glBindTexture(GL_TEXTURE_2D, crash_tex);
     pglBindVertexArray(crash_vao);
     pglBindBuffer(GL_ARRAY_BUFFER, crash_vbo);
-    pglBufferData(GL_ARRAY_BUFFER, g_ovl_nverts * 8 * sizeof(float),
-                  g_ovl_verts, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, g_ovl_nverts);
+    if (g_ovl_nverts) {
+        pglBufferData(GL_ARRAY_BUFFER, g_ovl_nverts * 8 * sizeof(float),
+                      g_ovl_verts, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, g_ovl_nverts);
+    }
+
+    /* Images, after the batch and so on top of it. Same program, same vertex
+     * layout, same VAO -- only the bound texture and the UVs differ, so each
+     * is a buffer upload and a draw with nothing else to reset. */
+    for (int i = 0; i < g_ovl_img_n; ++i) {
+        const float x0 = g_ovl_img[i].x, y0 = g_ovl_img[i].y;
+        const float x1 = x0 + g_ovl_img[i].w, y1 = y0 + g_ovl_img[i].h;
+        const float r = g_ovl_img[i].r, g = g_ovl_img[i].g;
+        const float b = g_ovl_img[i].b, a = g_ovl_img[i].a;
+        const float q[48] = {
+            x0, y0, 0, 0, r, g, b, a,   x1, y0, 1, 0, r, g, b, a,
+            x0, y1, 0, 1, r, g, b, a,   x1, y0, 1, 0, r, g, b, a,
+            x1, y1, 1, 1, r, g, b, a,   x0, y1, 0, 1, r, g, b, a
+        };
+        glBindTexture(GL_TEXTURE_2D, g_ovl_tex[g_ovl_img[i].tex]);
+        pglBufferData(GL_ARRAY_BUFFER, sizeof q, q, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    g_ovl_img_n = 0;
 
     /* Put it all back, in the reverse order it was taken. */
     glBindTexture(GL_TEXTURE_2D, (GLuint)prev_tex);
