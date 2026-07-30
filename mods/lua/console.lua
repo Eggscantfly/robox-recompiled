@@ -32,7 +32,7 @@
 -- the expression another way.
 --
 -- KEYS
---   `            open / close            Escape       close
+--   `            open and close          Escape       also closes
 --   Enter        run                     Tab          complete
 --   Up / Down    history                 PgUp / PgDn  scroll
 --   Home / End   line start / end        Ctrl+L       clear
@@ -795,7 +795,7 @@ local function edit_key(k)
 end
 
 local function console_key(k)
-    if k == "Escape" or k == "`" then
+    if k == "Escape" then
         C.close()
     elseif k == "Return" or k == "Keypad Enter" then
         submit()
@@ -854,10 +854,13 @@ robox.on("key", function(k, down)
         held[k] = nil
         return
     end
-    if open then
+    -- One branch for the toggle key, before anything else looks at it. Open
+    -- and close used to be two separate arms of this if, which is a shape that
+    -- can disagree with itself -- and did.
+    if k == "`" then
+        C.toggle()
+    elseif open then
         console_key(k)
-    elseif k == "`" then
-        C.open()
     elseif binds[k] then
         run_all(binds[k], false)
     end

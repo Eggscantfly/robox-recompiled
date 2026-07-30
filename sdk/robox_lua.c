@@ -521,9 +521,15 @@ void rlua_capture_release(void) {
     if (g_capture_mod < 0) return;
     g_capture_mod = -1;
     SDL_StopTextInput();
-    /* Every key is "up" as far as the next holder is concerned: whatever was
-     * down while the console ate it must not arrive as an edge afterwards. */
-    memset(g_keys_prev, 0, sizeof g_keys_prev);
+    /* g_keys_prev is deliberately left alone. It is a snapshot of the physical
+     * keyboard and it stays accurate across a capture change -- fire_key_edges
+     * keeps updating it while captured, it just delivers to one mod.
+     *
+     * Clearing it here looked tidy and was a bug: the key that drops capture is
+     * still physically DOWN for the next few frames, so a cleared snapshot
+     * reports it as a fresh press. For the console's ` that meant close and
+     * instantly reopen -- the key appeared not to work at all, and only Escape
+     * seemed to close it. Never fabricate an edge for a key nobody touched. */
 }
 
 /* Typed characters, from the SDL pump in sdk/video.c. Only the holder hears
